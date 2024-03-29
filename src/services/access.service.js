@@ -3,7 +3,11 @@
 class AccessService {
   async signUp() {}
 
-  async signIn() {}
+  async signIn() {
+    return {
+      token: "Random token",
+    };
+  }
 }
 
 module.exports = new AccessService();

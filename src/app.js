@@ -2,8 +2,10 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const compression = require("compression");
+const env = require("dotenv");
 
 const app = express();
+env.config();
 
 // Init middleware
 app.use(morgan("dev"));
@@ -24,6 +26,4 @@ app.use("/", router);
 
 // Handle error
 
-const server = app.listen(3000, () => {
-  console.log(`Server is running in port ${3000}`);
-});
+module.exports = app;

@@ -26,6 +26,8 @@ app.use(
 );
 
 // Init database
+const Database = require("./db/mongo.config");
+Database.connect();
 
 // Init routes
 const router = require("./routes");

@@ -3,9 +3,16 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const compression = require("compression");
 const env = require("dotenv");
+const swaggerUI = require("swagger-ui-express");
+const swaggerJsDocs = require("swagger-jsdoc");
 
 const app = express();
 env.config();
+
+// config Swagger
+const options = require("./config/config.swagger");
+const specs = swaggerJsDocs(options);
+app.use("/swagger/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
 // Init middleware
 app.use(morgan("dev"));

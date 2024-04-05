@@ -1,9 +1,9 @@
 "use strict";
 
 class AccessService {
-  async signUp() {}
+  async register({}) {}
 
-  async signIn() {
+  async login() {
     return {
       token: "Random token",
     };

@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const compression = require("compression");
 const env = require("dotenv");
+const passport = require("passport");
 const swaggerUI = require("swagger-ui-express");
 const swaggerJsDocs = require("swagger-jsdoc");
 
@@ -24,6 +25,9 @@ app.use(
     extended: true,
   })
 );
+// passport-jwt
+require("./auth/passport.config")(passport);
+app.use(passport.initialize());
 
 // Init database
 const Database = require("./db/mongo.config");

@@ -13,7 +13,7 @@ const accessController = require("../controllers/access.controller");
 
 /**
  * @swagger
- * /api/v1/auth/login:
+ * /api/v1/auth/register:
  *  post:
  *   tags: [Auth]
  *   requestBody:
@@ -23,6 +23,10 @@ const accessController = require("../controllers/access.controller");
  *      schema:
  *        type: object
  *        properties:
+ *         firstName:
+ *          type: string
+ *         lastName:
+ *          type: string
  *         email:
  *          type: string
  *         password:

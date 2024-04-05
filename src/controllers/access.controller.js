@@ -1,12 +1,13 @@
 const accessService = require("../services/access.service");
-const { OK } = require("../core/success.response");
+const { OK, CREATED } = require("../core/success.response");
 
 class AccessController {
   async register(req, res) {
-    return res.json({
-      message: "Register",
-      data: accessService.register(req.body),
-    });
+    return new CREATED({
+      message: "Login successfully",
+      statusCode: 200,
+      data: await accessService.register(req.body),
+    }).send(res);
   }
 
   async login(req, res) {

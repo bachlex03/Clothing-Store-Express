@@ -11,11 +11,10 @@ class AccessController {
   }
 
   async login(req, res) {
-    console.log("login");
     return new OK({
       message: "Login successfully",
       statusCode: 200,
-      data: await accessService.login(req),
+      data: await accessService.login(req.body),
     }).send(res);
   }
 

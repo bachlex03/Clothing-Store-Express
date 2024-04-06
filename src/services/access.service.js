@@ -10,15 +10,14 @@ const User = require("../entities/user.entity");
 const { generateTokenPair, decode } = require("../auth/jwt");
 const { getInfoObject } = require("../utils/getData");
 const sendEmail = require("../mailer/mailer.service");
-const { TOO_MANY_REQUESTS } = require("../utils/http.code/statusCodes");
 
 class AccessService {
   async register({ firstName = "", lastName = "", email, password }) {
     // 1. checking email exists
-    const existedUser = findOneByEmail(email);
+    const existedUser = await findOneByEmail(email);
 
-    if (!existedUser) {
-      throw new BadRequestError();
+    if (existedUser) {
+      throw new BadRequestError("User already registered");
     }
 
     // 2. hashing password

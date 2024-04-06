@@ -3,6 +3,7 @@
 const express = require("express");
 const router = express.Router();
 const accessController = require("../controllers/access.controller");
+const ErrorHandler = require("../utils/catchError");
 
 /**
  * @swagger
@@ -39,10 +40,9 @@ const accessController = require("../controllers/access.controller");
  *        schema:
  *         type: object
  */
+router.post("/auth/register", ErrorHandler(accessController.register));
 
-router.post("/auth/register", accessController.register);
-
-router.post("/auth/login", accessController.login);
+router.post("/auth/login", ErrorHandler(accessController.login));
 
 /**
  * @swagger
@@ -65,7 +65,7 @@ router.post("/auth/login", accessController.login);
  *             schema:
  *               type: object
  */
-router.get("/auth/verify", accessController.verify);
+router.get("/auth/verify", ErrorHandler(accessController.verify));
 
 /**
  * @swagger

@@ -18,6 +18,22 @@ class AccessController {
       data: await accessService.login(req),
     }).send(res);
   }
+
+  async verify(req, res) {
+    return new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await accessService.verify(req.query),
+    }).send(res);
+  }
+
+  async verifyEmail(req, res) {
+    return new OK({
+      message: "Verify successfully",
+      statusCode: 200,
+      data: await accessService.verifyEmail(req.body),
+    }).send(res);
+  }
 }
 
 module.exports = new AccessController();

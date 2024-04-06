@@ -2,6 +2,7 @@ const nodeMailer = require("nodemailer");
 const path = require("path");
 const hbs = require("nodemailer-express-handlebars");
 const { generateMailToken } = require("../auth/jwt");
+const bcrypt = require("bcrypt");
 
 const {
   mailer: { sender, password },
@@ -28,13 +29,13 @@ const handlebarOptions = {
 // use a template file with nodemailer
 transporter.use("compile", hbs(handlebarOptions));
 
-const sendEmail = async ({ to = "", name = "", token = "" }) => {
+const sendEmail = async ({ to = "", name = "" }) => {
   const randomToken = Math.floor(100000 + Math.random() * 900000);
 
   const payload = {
     name,
-    toEmail: to,
-    token: randomToken,
+    email: to,
+    token: await bcrypt.hash(randomToken.toString(), 10),
   };
 
   const mailToken = generateMailToken(payload);
@@ -49,7 +50,7 @@ const sendEmail = async ({ to = "", name = "", token = "" }) => {
       name,
       website: url,
       token: randomToken,
-      hrefVerify: `${url}/verify?q=${mailToken}`,
+      hrefVerify: `${url}/verifyEmail?q=${mailToken}`,
     },
   };
 

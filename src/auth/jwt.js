@@ -16,16 +16,6 @@ const generateTokenPair = (payload) => {
     expiresIn: refreshTokenExpiration,
   });
 
-  Jwt.verify(accessToken, secretKey, (error, decode) => {
-    if (error) {
-      console.log("Verify failure");
-    }
-
-    if (decode) {
-      console.log({ decode });
-    }
-  });
-
   return {
     accessToken,
     refreshToken,
@@ -40,7 +30,20 @@ const generateMailToken = (payload) => {
   return mailToken;
 };
 
+const decode = async (token) => {
+  try {
+    const decoded = await Jwt.verify(token, secretKey);
+
+    return decoded;
+  } catch (err) {
+    console.log("Verify token failed");
+
+    return null;
+  }
+};
+
 module.exports = {
   generateTokenPair,
   generateMailToken,
+  decode,
 };

@@ -44,4 +44,53 @@ router.post("/auth/register", accessController.register);
 
 router.post("/auth/login", accessController.login);
 
+/**
+ * @swagger
+ * /api/v1/auth/verify:
+ *   get:
+ *     summary: Retrieve user information.
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: q is jwt mail token.
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/auth/verify", accessController.verify);
+
+/**
+ * @swagger
+ * /api/v1/auth/verifyEmail:
+ *  post:
+ *   tags: [Auth]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         q:
+ *          type: string
+ *         mailToken:
+ *          type: string
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.post("/auth/verifyEmail", accessController.verifyEmail);
+
 module.exports = router;

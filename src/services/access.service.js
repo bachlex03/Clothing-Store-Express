@@ -31,26 +31,31 @@ class AccessService {
     const newUser = await createUser(user.getInstance());
 
     // 4. generate tokens
-    const payload = {
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      email: newUser.email,
-      roles: newUser.roles,
-    };
+    // const payload = {
+    //   firstName: newUser.firstName,
+    //   lastName: newUser.lastName,
+    //   email: newUser.email,
+    //   roles: newUser.roles,
+    // };
 
-    const { accessToken, refreshToken } = generateTokenPair(payload);
+    // const { accessToken, refreshToken } = generateTokenPair(payload);
 
     // 5. send email
-    await sendEmail({ to: newUser.email, name: newUser.firstName });
+    const mailToken = await sendEmail({
+      to: newUser.email,
+      name: newUser.firstName,
+    });
 
-    return {
-      user: getInfoObject({
-        obj: newUser,
-        fields: ["firstName", "lastName", "email"],
-      }),
-      accessToken,
-      refreshToken,
-    };
+    return mailToken;
+
+    // return {
+    //   user: getInfoObject({
+    //     obj: newUser,
+    //     fields: ["firstName", "lastName", "email"],
+    //   }),
+    //   accessToken,
+    //   refreshToken,
+    // };
   }
 
   async login() {
@@ -58,6 +63,8 @@ class AccessService {
       token: "Random token",
     };
   }
+
+  async verifyEmail({}) {}
 }
 
 module.exports = new AccessService();

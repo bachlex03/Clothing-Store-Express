@@ -1,9 +1,11 @@
 const nodeMailer = require("nodemailer");
 const path = require("path");
 const hbs = require("nodemailer-express-handlebars");
+const { generateMailToken } = require("../auth/jwt");
 
 const {
   mailer: { sender, password },
+  website: { url },
 } = require("../config/config.env");
 
 const transporter = nodeMailer.createTransport({
@@ -26,8 +28,17 @@ const handlebarOptions = {
 // use a template file with nodemailer
 transporter.use("compile", hbs(handlebarOptions));
 
-const sendEmail = async ({ to = "", name = "" }) => {
-  console.log({ to });
+const sendEmail = async ({ to = "", name = "", token = "" }) => {
+  const randomToken = Math.floor(100000 + Math.random() * 900000);
+
+  const payload = {
+    name,
+    toEmail: to,
+    token: randomToken,
+  };
+
+  const mailToken = generateMailToken(payload);
+
   var opts = {
     from: sender,
     to,
@@ -36,8 +47,9 @@ const sendEmail = async ({ to = "", name = "" }) => {
     template: "receiver",
     context: {
       name,
-      website: "jewelrystorevn.io.vn",
-      token: "512344",
+      website: url,
+      token: randomToken,
+      hrefVerify: `${url}/verify?q=${mailToken}`,
     },
   };
 
@@ -48,6 +60,8 @@ const sendEmail = async ({ to = "", name = "" }) => {
       console.log("Email sent: " + info.response);
     }
   });
+
+  return mailToken;
 };
 
 module.exports = sendEmail;

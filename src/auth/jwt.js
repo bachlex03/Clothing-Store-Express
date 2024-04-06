@@ -4,6 +4,7 @@ const Jwt = require("jsonwebtoken");
 
 const {
   jwt: { secretKey, accessTokenExpiration, refreshTokenExpiration },
+  mailer: { tokenExpiration },
 } = require("../config/config.env");
 
 const generateTokenPair = (payload) => {
@@ -31,6 +32,15 @@ const generateTokenPair = (payload) => {
   };
 };
 
+const generateMailToken = (payload) => {
+  const mailToken = Jwt.sign(payload, secretKey, {
+    expiresIn: tokenExpiration,
+  });
+
+  return mailToken;
+};
+
 module.exports = {
   generateTokenPair,
+  generateMailToken,
 };

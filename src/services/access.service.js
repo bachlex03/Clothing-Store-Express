@@ -43,9 +43,36 @@ class AccessService {
     return "/success-register";
   }
 
-  async login() {
+  async login({ email = "", password = "" }) {
+    // 1. check exist user
+    const existUser = await findOneByEmail(email);
+
+    if (!existUser) {
+      throw new BadRequestError("User already registered");
+    }
+
+    // 2. compare password
+    if (!bcrypt.compare(password, existUser.password)) {
+      throw new BadRequestError("Wrong password");
+    }
+
+    // 3. generate tokens
+    const payload = {
+      firstName: existUser.firstName,
+      lastName: existUser.lastName,
+      email: existUser.email,
+      roles: existUser.roles,
+    };
+
+    const { accessToken, refreshToken } = generateTokenPair(payload);
+
     return {
-      token: "Random token",
+      user: getInfoObject({
+        obj: existUser,
+        fields: ["firstName", "lastName", "email"],
+      }),
+      accessToken,
+      refreshToken,
     };
   }
 

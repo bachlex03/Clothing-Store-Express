@@ -1,5 +1,5 @@
-const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
+const JwtStrategy = require("passport-jwt").Strategy;
 
 const {
   jwt: { secretKey },
@@ -11,13 +11,14 @@ const opts = {
 };
 
 module.exports = (passport) => {
-  passport.use(opts, (jwtPayload, next) => {
-    console.log({ jwtPayload });
+  passport.use(
+    "jwt",
+    new JwtStrategy(opts, (jwtPayload, next) => {
+      return next(null, jwtPayload);
 
-    return next(null, { email: "lxbach@gmail.com" });
-
-    if (!false) {
-      return next(null, false);
-    }
-  });
+      if (!false) {
+        return next(null, false);
+      }
+    })
+  );
 };

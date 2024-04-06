@@ -25,7 +25,7 @@ app.use(
     extended: true,
   })
 );
-// passport-jwt
+// init passport-jwt
 require("./auth/passport.config")(passport);
 app.use(passport.initialize());
 

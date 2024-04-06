@@ -3,9 +3,10 @@
 const express = require("express");
 const router = express.Router();
 
-// access router
 const accessRouter = require("./access");
+const userRouter = require("./user");
 
-router.use("/api/v1", accessRouter);
+router.use("/api/v1/auth", accessRouter);
+router.use("/api/v1/users", userRouter);
 
 module.exports = router;

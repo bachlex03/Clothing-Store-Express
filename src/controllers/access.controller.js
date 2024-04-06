@@ -7,7 +7,7 @@ class AccessController {
       message: "Login successfully",
       statusCode: 200,
       data: await accessService.register(req.body),
-    }).redirect(res);
+    }).send(res);
   }
 
   async login(req, res) {

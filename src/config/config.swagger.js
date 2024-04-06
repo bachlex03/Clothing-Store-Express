@@ -11,6 +11,21 @@ module.exports = options = {
         url: `http://localhost:${process.env.PORT}`,
       },
     ],
+    components: {
+      responses: {},
+      securitySchemes: {
+        BearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        BearerAuth: [],
+      },
+    ],
   },
   apis: ["./src/routes/**/*.js"],
 };

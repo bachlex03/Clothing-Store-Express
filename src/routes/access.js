@@ -40,9 +40,33 @@ const ErrorHandler = require("../utils/catchError");
  *        schema:
  *         type: object
  */
-router.post("/auth/register", ErrorHandler(accessController.register));
+router.post("/register", ErrorHandler(accessController.register));
 
-router.post("/auth/login", ErrorHandler(accessController.login));
+/**
+ * @swagger
+ * /api/v1/auth/login:
+ *  post:
+ *   tags: [Auth]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         email:
+ *          type: string
+ *         password:
+ *          type: string
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.post("/login", ErrorHandler(accessController.login));
 
 /**
  * @swagger

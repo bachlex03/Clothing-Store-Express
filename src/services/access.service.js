@@ -6,6 +6,7 @@ const { findOneByEmail, createUser } = require("../services/user.service");
 const User = require("../entities/user.entity");
 const { generateTokenPair } = require("../auth/jwt");
 const { getInfoObject } = require("../utils/getData");
+const sendEmail = require("../mailer/mailer.service");
 
 class AccessService {
   async register({ firstName = "", lastName = "", email, password }) {
@@ -30,27 +31,26 @@ class AccessService {
     const newUser = await createUser(user.getInstance());
 
     // 4. generate tokens
-    if (newUser) {
-      const payload = {
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-        roles: newUser.roles,
-      };
+    const payload = {
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      email: newUser.email,
+      roles: newUser.roles,
+    };
 
-      const { accessToken, refreshToken } = generateTokenPair(payload);
+    const { accessToken, refreshToken } = generateTokenPair(payload);
 
-      return {
-        user: getInfoObject({
-          obj: newUser,
-          fields: ["firstName", "lastName", "email"],
-        }),
-        accessToken,
-        refreshToken,
-      };
-    }
+    // 5. send email
+    await sendEmail({ to: newUser.email, name: newUser.firstName });
 
-    return newUser;
+    return {
+      user: getInfoObject({
+        obj: newUser,
+        fields: ["firstName", "lastName", "email"],
+      }),
+      accessToken,
+      refreshToken,
+    };
   }
 
   async login() {

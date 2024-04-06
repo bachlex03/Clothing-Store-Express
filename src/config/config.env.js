@@ -12,4 +12,8 @@ module.exports = {
     accessTokenExpiration: process.env.AT_EXPIRED_IN,
     refreshTokenExpiration: process.env.RT_EXPIRED_IN,
   },
+  mailer: {
+    sender: process.env.MAILER_SENDER,
+    password: process.env.MAILER_PASSWORD,
+  },
 };

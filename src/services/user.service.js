@@ -10,18 +10,18 @@ const findOneByEmail = (email) => {
 };
 
 const createUser = async ({ firstName, lastName, email, password }) => {
-  const newUser = await userModel.create({
-    firstName,
-    lastName,
-    email,
-    password,
-  });
+  try {
+    const newUser = await userModel.create({
+      firstName,
+      lastName,
+      email,
+      password,
+    });
 
-  if (!newUser) {
-    throw new BadRequestError("Couldn't create user");
+    return newUser;
+  } catch (err) {
+    throw new BadRequestError(err);
   }
-
-  return newUser;
 };
 
 module.exports = {

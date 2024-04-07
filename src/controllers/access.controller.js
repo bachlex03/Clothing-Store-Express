@@ -26,6 +26,14 @@ class AccessController {
     }).send(res);
   }
 
+  async sendMailToken(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await accessService.sendMailToken(req.body),
+    });
+  }
+
   async verifyEmail(req, res) {
     return new OK({
       message: "Verify successfully",

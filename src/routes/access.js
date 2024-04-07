@@ -72,7 +72,6 @@ router.post("/login", ErrorHandler(accessController.login));
  * @swagger
  * /api/v1/auth/verify:
  *   get:
- *     summary: Retrieve user information.
  *     tags: [Auth]
  *     parameters:
  *       - in: query
@@ -89,7 +88,7 @@ router.post("/login", ErrorHandler(accessController.login));
  *             schema:
  *               type: object
  */
-router.get("/auth/verify", ErrorHandler(accessController.verify));
+router.get("/verify", ErrorHandler(accessController.verify));
 
 /**
  * @swagger
@@ -115,6 +114,6 @@ router.get("/auth/verify", ErrorHandler(accessController.verify));
  *        schema:
  *         type: object
  */
-router.post("/auth/verifyEmail", accessController.verifyEmail);
+router.post("/verifyEmail", accessController.verifyEmail);
 
 module.exports = router;

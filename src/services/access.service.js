@@ -5,13 +5,46 @@ const {
   BadRequestError,
   AuthenticationError,
 } = require("../core/error.response");
-const { findOneByEmail, createUser } = require("../services/user.service");
+const {
+  findOneByEmail,
+  createUser,
+  findOneUser,
+} = require("../services/user.service");
 const User = require("../entities/user.entity");
 const { generateTokenPair, decode } = require("../auth/jwt");
 const { getInfoObject } = require("../utils/getData");
 const sendEmail = require("../mailer/mailer.service");
 
 class AccessService {
+  // [GET] /verify?q=
+  async verify({ q }) {
+    // q is a jwt token
+    if (!q) {
+      throw new AuthenticationError("Not permitted to access this page");
+    }
+
+    const decodedToken = await decode(q);
+
+    if (!decodedToken) {
+      throw new AuthenticationError("Not permitted to access this page");
+    }
+
+    return {};
+  }
+
+  // [GET] /sendEmail
+  async sendEmail({ q }) {}
+
+  // [POST] /sendMailToken
+  async sendMailToken({ email, password }) {
+    if (!email || !password) {
+      throw new BadRequestError("Something went wrong");
+    }
+
+    const existUser = await findOneUser(email, password);
+  }
+
+  // [POST] /register
   async register({ firstName = "", lastName = "", email, password }) {
     // 1. checking email exists
     const existedUser = await findOneByEmail(email);
@@ -34,15 +67,16 @@ class AccessService {
     const newUser = await createUser(user.getInstance());
 
     // 4. send email
-    await sendEmail({
+    const token = await sendEmail({
       to: newUser.email,
       name: newUser.firstName,
     });
 
     //5. return page success
-    return "/success-register";
+    return "/verify?q=" + token;
   }
 
+  // [POST] /login
   async login({ email = "", password = "" }) {
     // 1. check exist user
     const existUser = await findOneByEmail(email);
@@ -54,6 +88,17 @@ class AccessService {
     // 2. compare password
     if (!bcrypt.compare(password, existUser.password)) {
       throw new BadRequestError("Wrong password");
+    }
+
+    // 3. check is verified {}
+    if (!existUser.verify) {
+      const payload = {
+        email: existUser.email,
+      };
+
+      return {
+        redirect: "/sendMail?q=",
+      };
     }
 
     // 3. generate tokens
@@ -76,21 +121,7 @@ class AccessService {
     };
   }
 
-  async verify({ q }) {
-    // q is a jwt token
-    if (!q) {
-      throw new AuthenticationError("Not permitted to access this page");
-    }
-
-    const decodedToken = await decode(q);
-
-    if (!decodedToken) {
-      throw new AuthenticationError("Not permitted to access this page");
-    }
-
-    return {};
-  }
-
+  // [POST] /verifyEmail
   async verifyEmail({ q, mailToken }) {
     if (!q && !mailToken) {
       throw new BadRequestError("Something went wrong");

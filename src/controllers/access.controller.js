@@ -30,8 +30,8 @@ class AccessController {
     new OK({
       message: "OK",
       statusCode: 200,
-      data: await accessService.sendMailToken(req.body),
-    });
+      data: await accessService.sendMailToken(req.query),
+    }).send(res);
   }
 
   async verifyEmail(req, res) {

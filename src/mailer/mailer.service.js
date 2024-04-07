@@ -32,13 +32,13 @@ transporter.use("compile", hbs(handlebarOptions));
 const sendEmail = async ({ to = "", name = "" }) => {
   const randomToken = Math.floor(100000 + Math.random() * 900000);
 
-  const payload = {
-    name,
-    email: to,
-    token: await bcrypt.hash(randomToken.toString(), 10),
-  };
+  // const payload = {
+  //   name,
+  //   email: to,
+  //   token: await bcrypt.hash(randomToken.toString(), 10),
+  // };
 
-  const mailToken = generateMailToken(payload);
+  // const mailToken = generateMailToken(payload);
 
   var opts = {
     from: sender,
@@ -50,7 +50,7 @@ const sendEmail = async ({ to = "", name = "" }) => {
       name,
       website: url,
       token: randomToken,
-      hrefVerify: `${url}/verifyEmail?q=${mailToken}`,
+      // hrefVerify: `${url}/verifyEmail?q=${mailToken}`,
     },
   };
 
@@ -62,7 +62,7 @@ const sendEmail = async ({ to = "", name = "" }) => {
     }
   });
 
-  return mailToken;
+  return randomToken;
 };
 
 module.exports = sendEmail;

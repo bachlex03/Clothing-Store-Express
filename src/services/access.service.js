@@ -14,6 +14,8 @@ const User = require("../entities/user.entity");
 const { generateTokenPair, decode } = require("../auth/jwt");
 const { getInfoObject } = require("../utils/getData");
 const sendEmail = require("../mailer/mailer.service");
+const RedisService = require("./redis.service");
+const { generateMailToken } = require("../auth/jwt");
 
 class AccessService {
   // [GET] /verify?q=
@@ -29,19 +31,77 @@ class AccessService {
       throw new AuthenticationError("Not permitted to access this page");
     }
 
-    return {};
+    return { message: "Can send email token" };
   }
 
-  // [GET] /sendEmail
-  async sendEmail({ q }) {}
+  // [GET] /sendMailToken?q=
+  async sendMailToken({ q }) {
+    // q is a jwt token
+    if (!q) {
+      throw new AuthenticationError("Not permitted to access this page");
+    }
 
-  // [POST] /sendMailToken
-  async sendMailToken({ email, password }) {
-    if (!email || !password) {
+    const decodedToken = await decode(q);
+
+    if (!decodedToken) {
+      throw new AuthenticationError("Not permitted to access this page");
+    }
+
+    const { email, firstName } = decodedToken;
+
+    const token = await sendEmail({
+      to: email,
+      name: firstName,
+    });
+
+    RedisService.set(`${email}`, token);
+
+    return {
+      message: "Sended !",
+    };
+  }
+
+  // [POST] /verifyEmail
+  async verifyEmail({ q, mailToken }) {
+    if (!q && !mailToken) {
       throw new BadRequestError("Something went wrong");
     }
 
-    const existUser = await findOneUser(email, password);
+    const decodedToken = await decode(q);
+
+    if (!decodedToken) {
+      throw new AuthenticationError("Not permitted to access this page");
+    }
+
+    // Compare mailToken with token in redis
+    const { email } = decodedToken;
+
+    const redisToken = await RedisService.get(`${email}`);
+
+    if (mailToken != redisToken) {
+      throw new BadRequestError("Something went wrong");
+    }
+
+    const user = await findOneByEmail(email);
+    await user.updateOne({ verify: true });
+
+    const payload = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      roles: user.roles,
+    };
+
+    const { accessToken, refreshToken } = generateTokenPair(payload);
+
+    return {
+      user: getInfoObject({
+        obj: user,
+        fields: ["firstName", "lastName", "email"],
+      }),
+      accessToken,
+      refreshToken,
+    };
   }
 
   // [POST] /register
@@ -66,14 +126,18 @@ class AccessService {
 
     const newUser = await createUser(user.getInstance());
 
-    // 4. send email
-    const token = await sendEmail({
-      to: newUser.email,
-      name: newUser.firstName,
-    });
+    // 4. redirect /verify?q=
+    const payload = {
+      email: newUser.email,
+      firstName: newUser.firstName,
+    };
+
+    const token = generateMailToken(payload);
 
     //5. return page success
-    return "/verify?q=" + token;
+    return {
+      redirect: "/verify?q=" + token,
+    };
   }
 
   // [POST] /login
@@ -90,14 +154,19 @@ class AccessService {
       throw new BadRequestError("Wrong password");
     }
 
-    // 3. check is verified {}
+    // 3. check is verified
     if (!existUser.verify) {
       const payload = {
         email: existUser.email,
+        firstName: existUser.firstName,
       };
 
+      const token = generateMailToken(payload);
+
+      console.log("?q=" + token);
+
       return {
-        redirect: "/sendMail?q=",
+        redirect: "/verify?q=" + token,
       };
     }
 
@@ -114,46 +183,6 @@ class AccessService {
     return {
       user: getInfoObject({
         obj: existUser,
-        fields: ["firstName", "lastName", "email"],
-      }),
-      accessToken,
-      refreshToken,
-    };
-  }
-
-  // [POST] /verifyEmail
-  async verifyEmail({ q, mailToken }) {
-    if (!q && !mailToken) {
-      throw new BadRequestError("Something went wrong");
-    }
-
-    const decodedToken = await decode(q);
-
-    if (!decodedToken) {
-      throw new AuthenticationError("Not permitted to access this page");
-    }
-
-    const { email, token } = decodedToken;
-
-    if (!bcrypt.compare(mailToken, token)) {
-      throw new BadRequestError("Wrong token");
-    }
-
-    const user = await findOneByEmail(email);
-    await user.updateOne({ verify: true });
-
-    const payload = {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      roles: user.roles,
-    };
-
-    const { accessToken, refreshToken } = generateTokenPair(payload);
-
-    return {
-      user: getInfoObject({
-        obj: user,
         fields: ["firstName", "lastName", "email"],
       }),
       accessToken,

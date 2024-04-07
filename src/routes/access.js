@@ -92,6 +92,28 @@ router.get("/verify", ErrorHandler(accessController.verify));
 
 /**
  * @swagger
+ * /api/v1/auth/sendMailToken:
+ *   get:
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: q is jwt mail token.
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/sendMailToken", ErrorHandler(accessController.sendMailToken));
+
+/**
+ * @swagger
  * /api/v1/auth/verifyEmail:
  *  post:
  *   tags: [Auth]
@@ -114,6 +136,6 @@ router.get("/verify", ErrorHandler(accessController.verify));
  *        schema:
  *         type: object
  */
-router.post("/verifyEmail", accessController.verifyEmail);
+router.post("/verifyEmail", ErrorHandler(accessController.verifyEmail));
 
 module.exports = router;

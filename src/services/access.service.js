@@ -5,11 +5,7 @@ const {
   BadRequestError,
   AuthenticationError,
 } = require("../core/error.response");
-const {
-  findOneByEmail,
-  createUser,
-  findOneUser,
-} = require("../services/user.service");
+const { findOneByEmail, createUser } = require("../services/user.service");
 const User = require("../entities/user.entity");
 const { generateTokenPair, decode } = require("../auth/jwt");
 const { getInfoObject } = require("../utils/getData");
@@ -28,6 +24,12 @@ class AccessService {
     const decodedToken = await decode(q);
 
     if (!decodedToken) {
+      throw new AuthenticationError("Not permitted to access this page");
+    }
+
+    const { verified } = decodedToken;
+
+    if (verified) {
       throw new AuthenticationError("Not permitted to access this page");
     }
 
@@ -54,7 +56,7 @@ class AccessService {
       name: firstName,
     });
 
-    RedisService.set(`${email}`, token);
+    RedisService.set(`${email}:token`, token);
 
     return {
       message: "Sended !",
@@ -76,11 +78,13 @@ class AccessService {
     // Compare mailToken with token in redis
     const { email } = decodedToken;
 
-    const redisToken = await RedisService.get(`${email}`);
+    const redisToken = await RedisService.get(`${email}:token`);
 
     if (mailToken != redisToken) {
       throw new BadRequestError("Something went wrong");
     }
+
+    await RedisService.del(`${email}:token`);
 
     const user = await findOneByEmail(email);
     await user.updateOne({ verify: true });
@@ -130,6 +134,7 @@ class AccessService {
     const payload = {
       email: newUser.email,
       firstName: newUser.firstName,
+      verified: newUser.verify,
     };
 
     const token = generateMailToken(payload);
@@ -159,6 +164,7 @@ class AccessService {
       const payload = {
         email: existUser.email,
         firstName: existUser.firstName,
+        verified: existUser.verify,
       };
 
       const token = generateMailToken(payload);

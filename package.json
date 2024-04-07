@@ -23,6 +23,8 @@
     "lodash": "^4.17.21",
     "mongodb": "^6.5.0",
     "mongoose": "^8.3.0",
+    "mongoose-slug-generator": "^1.0.4",
+    "mongoose-slug-updater": "^3.3.0",
     "morgan": "^1.10.0",
     "nanoid": "^5.0.6",
     "nodemailer": "^6.9.13",

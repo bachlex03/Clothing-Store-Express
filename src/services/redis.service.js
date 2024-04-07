@@ -11,7 +11,14 @@ const set = async (key = "", value = "") => {
   return;
 };
 
+const del = async (key = "") => {
+  await client.delete(key);
+
+  return;
+};
+
 module.exports = {
   get,
   set,
+  del,
 };

@@ -21,7 +21,6 @@ const handleEventConnection = (redisClient) => {
   });
 
   redisClient.on(status.ERROR, () => {
-    ERROR;
     console.log("Connection redis - status:::" + status.ERROR);
   });
 

@@ -10,13 +10,15 @@ class Database {
   instance = null;
 
   constructor() {
-    this.connect();
+    Database.connect();
   }
 
   static async connect(type = "mongodb") {
-    this.instance = mongoose
+    await mongoose
       .connect(CONNECTION_STR, { maxPoolSize: 50 })
-      .then((_) => {
+      .then((connect) => {
+        this.instance = connect;
+
         console.log("Connected to database");
       })
       .catch((_) => {
@@ -24,12 +26,12 @@ class Database {
       });
   }
 
-  getInstance() {
-    if (!instance) {
-      instance = new Database();
+  static async getInstance() {
+    if (!this.instance) {
+      this.instance = await new Database();
     }
 
-    return instance;
+    return this.instance;
   }
 }
 

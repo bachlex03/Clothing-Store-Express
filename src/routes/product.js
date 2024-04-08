@@ -49,5 +49,8 @@ const ErrorHandler = require("../utils/catchError");
  *         type: object
  */
 router.post("/", ErrorHandler(productController.create));
+router.get("/", ErrorHandler(productController.create));
+router.get("/:slug", ErrorHandler(productController.create));
+router.put("/", ErrorHandler(productController.create));
 
 module.exports = router;

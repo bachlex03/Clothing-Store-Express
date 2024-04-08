@@ -92,7 +92,7 @@ class AccessService {
     await RedisService.del(`${email}:token`);
 
     const user = await findOneByEmail(email);
-    await user.updateOne({ verify: true });
+    await user.updateOne({ verified: true });
 
     const payload = {
       firstName: user.firstName,
@@ -139,7 +139,7 @@ class AccessService {
     const payload = {
       email: newUser.email,
       firstName: newUser.firstName,
-      verified: newUser.verify,
+      verified: newUser.verified,
     };
 
     const token = generateMailToken(payload);

@@ -1,5 +1,4 @@
 const { model, Schema } = require("mongoose");
-const { Sizes } = require("../common/constant");
 
 const COLLECTION_NAME = "Inventory";
 const DOCUMENT_NAME = "inventory";

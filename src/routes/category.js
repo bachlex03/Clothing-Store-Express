@@ -37,4 +37,19 @@ const categoryController = require("../controllers/category.controller");
  */
 router.post("/", ErrorHandler(categoryController.create));
 
+/**
+ * @swagger
+ * /api/v1/categories:
+ *   get:
+ *     tags: [Categories]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/", ErrorHandler(categoryController.getAll));
+
 module.exports = router;

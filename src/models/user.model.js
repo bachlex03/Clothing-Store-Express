@@ -29,7 +29,7 @@ const userSchema = new Schema(
       required: true,
       trim: true,
     },
-    verify: {
+    verified: {
       type: Schema.Types.Boolean,
       default: false,
     },
@@ -37,6 +37,10 @@ const userSchema = new Schema(
       type: [String],
       default: ["USER"],
       enum: ["USER", "STAFF", "ADMIN"],
+    },
+    user_profile: {
+      type: Schema.Types.ObjectId,
+      ref: "Profile",
     },
   },
   {

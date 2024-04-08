@@ -125,8 +125,6 @@ const getBySlug = async (params) => {
     };
   });
 
-  console.log(flat);
-
   const result = { ...product.toObject(), skus: [...flat] };
 
   return result;

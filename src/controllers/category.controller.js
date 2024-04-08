@@ -9,6 +9,14 @@ class CategoryController {
       data: await categoryService.create(req.body),
     }).send(res);
   }
+
+  async getAll(req, res) {
+    new CREATED({
+      message: "Create successfully",
+      statusCode: 200,
+      data: await categoryService.getAll(),
+    }).send(res);
+  }
 }
 
 module.exports = new CategoryController();

@@ -3,7 +3,7 @@ module.exports = class User {
   lastName;
   email;
   password;
-  verify;
+  verified;
   roles;
 
   constructor() {}

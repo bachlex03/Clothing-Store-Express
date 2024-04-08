@@ -13,19 +13,20 @@ const productSchema = new Schema(
     product_name: {
       type: String,
       default: "",
-      index: true,
+      trim: true,
     },
     product_description: {
       type: String,
       default: "No description yet",
+      trim: true,
     },
-    product_size: {
-      type: String,
+    product_sizes: {
+      type: [String],
       enum: ["S", "M", "L", "XL"],
       required: true,
     },
-    product_color: {
-      type: String,
+    product_colors: {
+      type: [String],
       enum: ["Yellow", "Red", "Brown", "Gray", "Pink", "White"],
       required: true,
     },
@@ -39,6 +40,7 @@ const productSchema = new Schema(
     product_type: {
       type: String,
       default: "",
+      trim: true,
     },
     product_price: {
       type: Number,

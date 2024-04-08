@@ -106,11 +106,28 @@ const getBySlug = async (params) => {
     throw new NotFoundError("Product not found");
   }
 
-  const productInventory = await inventoryService.getByProductId(product._id);
+  const filtersInventory = {
+    "sku.sku_size": 1,
+    "sku.sku_color": 1,
+    "sku.sku_quantity": 1,
+    _id: 0,
+  };
 
-  const { product_quantity } = productInventory;
+  const productInventory = await inventoryService.getByProductId(
+    product._id,
+    filtersInventory
+  );
 
-  const result = { ...product.toObject(), product_quantity };
+  const flat = productInventory.map((item) => {
+    var { sku } = item.toObject();
+    return {
+      ...sku,
+    };
+  });
+
+  console.log(flat);
+
+  const result = { ...product.toObject(), skus: [...flat] };
 
   return result;
 };

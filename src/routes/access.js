@@ -138,4 +138,28 @@ router.get("/sendMailToken", ErrorHandler(accessController.sendMailToken));
  */
 router.post("/verifyEmail", ErrorHandler(accessController.verifyEmail));
 
+/**
+ * @swagger
+ * /api/v1/auth/recover:
+ *  post:
+ *   tags: [Auth]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         email:
+ *          type: string
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.post("/recover", ErrorHandler(accessController.recover));
+
 module.exports = router;

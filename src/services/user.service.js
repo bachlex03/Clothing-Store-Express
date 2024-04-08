@@ -30,8 +30,28 @@ const createUser = async ({ firstName, lastName, email, password }) => {
   }
 };
 
+const updatePassword = async (email, password) => {
+  try {
+    const user = await userModel.findOneAndUpdate(
+      {
+        email: email,
+      },
+      {
+        password: password,
+      }
+    );
+
+    return user;
+  } catch (err) {
+    console.log(err);
+  }
+
+  return null;
+};
+
 module.exports = {
   findOneByEmail,
   createUser,
   findOneUser,
+  updatePassword,
 };

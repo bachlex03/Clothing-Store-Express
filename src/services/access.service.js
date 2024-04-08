@@ -1,15 +1,20 @@
 "use strict";
 
 const bcrypt = require("bcrypt");
+const cryptoRandomString = import("crypto-random-string");
 const {
   BadRequestError,
   AuthenticationError,
 } = require("../core/error.response");
-const { findOneByEmail, createUser } = require("../services/user.service");
+const {
+  findOneByEmail,
+  createUser,
+  updatePassword,
+} = require("../services/user.service");
 const User = require("../entities/user.entity");
 const { generateTokenPair, decode } = require("../auth/jwt");
 const { getInfoObject } = require("../utils/getData");
-const sendEmail = require("../mailer/mailer.service");
+const { sendEmail, sendResetPassword } = require("../mailer/mailer.service");
 const RedisService = require("./redis.service");
 const { generateMailToken } = require("../auth/jwt");
 
@@ -193,6 +198,34 @@ class AccessService {
       }),
       accessToken,
       refreshToken,
+    };
+  }
+
+  // [POST] /recover
+  async recover(body) {
+    const { email } = body;
+
+    const randomPassword = (await cryptoRandomString).default({
+      length: 10,
+      type: "base64",
+    });
+
+    console.log(randomPassword);
+
+    const user = await updatePassword(email, randomPassword);
+
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+
+    sendResetPassword({
+      to: email,
+      name: user.firstName,
+      randomPassword: randomPassword,
+    });
+
+    return {
+      message: "Sended !",
     };
   }
 }

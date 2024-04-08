@@ -32,14 +32,6 @@ transporter.use("compile", hbs(handlebarOptions));
 const sendEmail = async ({ to = "", name = "" }) => {
   const randomToken = Math.floor(100000 + Math.random() * 900000);
 
-  // const payload = {
-  //   name,
-  //   email: to,
-  //   token: await bcrypt.hash(randomToken.toString(), 10),
-  // };
-
-  // const mailToken = generateMailToken(payload);
-
   var opts = {
     from: sender,
     to,
@@ -65,4 +57,37 @@ const sendEmail = async ({ to = "", name = "" }) => {
   return randomToken;
 };
 
-module.exports = sendEmail;
+const sendResetPassword = async ({
+  to = "",
+  name = "",
+  randomPassword = "",
+}) => {
+  const randomToken = Math.floor(100000 + Math.random() * 900000);
+
+  var opts = {
+    from: sender,
+    to,
+    subject: "[RESET_PASSWORD] Clothing store notification",
+    text: `Hii ${name} !`,
+    template: "recover",
+    context: {
+      name,
+      resetPassword: randomPassword,
+    },
+  };
+
+  transporter.sendMail(opts, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+
+  return randomToken;
+};
+
+module.exports = {
+  sendEmail,
+  sendResetPassword,
+};

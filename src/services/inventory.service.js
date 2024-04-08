@@ -46,15 +46,20 @@ const create = async ({
   return null;
 };
 
-const getByProductId = async (productId) => {
+const getByProductId = async (productId, filters = {}) => {
   if (productId === Schema.Types.ObjectId) {
     throw new BadRequestError("Something wrong with product ID");
   }
 
   try {
-    const inventory = await inventoryModel.findOne({
-      inventory_product: productId,
-    });
+    const inventory = await inventoryModel.find(
+      {
+        inventory_product: productId,
+      },
+      filters
+    );
+
+    console.log(inventory);
 
     return inventory;
   } catch (err) {

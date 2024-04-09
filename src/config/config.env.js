@@ -20,4 +20,9 @@ module.exports = {
   website: {
     url: process.env.REACT_URL,
   },
+  vnpay: {
+    tmnCode: process.env.VN_PAY_TMN_CODE,
+    hashSecret: process.env.VN_PAY_HASH_SECRET,
+    vnpUrl: process.env.VN_PAY_URL_PAYMENT,
+  },
 };

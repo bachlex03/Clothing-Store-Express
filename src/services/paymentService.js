@@ -5,8 +5,6 @@ const {
   AuthenticationError,
 } = require("../core/error.response");
 const userService = require("./user.service");
-const Profile = require("../models/profile.model");
-const Address = require("../models/address.model");
 
 const payInvoice = async (req) => {
   const {
@@ -16,6 +14,7 @@ const payInvoice = async (req) => {
     city = "",
     province = "",
     country = "",
+    phoneNumber = "",
   } = req.body;
 
   if (
@@ -55,7 +54,8 @@ const payInvoice = async (req) => {
     address_addressLine !== addressLine ||
     address_city !== city ||
     address_provide !== province ||
-    address_country !== country
+    address_country !== country ||
+    phoneNumber !== profile_phoneNumber
   ) {
     throw new BadRequestError("Profile information does not match");
   }

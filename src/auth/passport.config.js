@@ -1,5 +1,6 @@
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const JwtStrategy = require("passport-jwt").Strategy;
+const { AuthenticationError } = require("../core/error.response");
 
 const {
   jwt: { secretKey },
@@ -14,11 +15,9 @@ module.exports = (passport) => {
   passport.use(
     "jwt",
     new JwtStrategy(opts, (jwtPayload, next) => {
-      return next(null, jwtPayload);
+      console.log({ jwtPayload });
 
-      if (!false) {
-        return next(null, false);
-      }
+      return next(null, jwtPayload);
     })
   );
 };

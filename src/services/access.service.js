@@ -5,6 +5,7 @@ const cryptoRandomString = import("crypto-random-string");
 const {
   BadRequestError,
   AuthenticationError,
+  NotFoundError,
 } = require("../core/error.response");
 const {
   findOneByEmail,
@@ -114,7 +115,9 @@ class AccessService {
   }
 
   // [POST] /register
-  async register({ firstName = "", lastName = "", email, password }) {
+  async register(body) {
+    const { firstName = "", lastName = "", email, password } = body;
+
     // 1. checking email exists
     const existedUser = await findOneByEmail(email);
 
@@ -134,6 +137,10 @@ class AccessService {
       .setLastName(lastName);
 
     const newUser = await createUser(user.getInstance());
+
+    if (!newUser) {
+      throw new BadRequestError("Something went wrong");
+    }
 
     // 4. redirect /verify?q=
     const payload = {
@@ -156,7 +163,7 @@ class AccessService {
     const existUser = await findOneByEmail(email);
 
     if (!existUser) {
-      throw new BadRequestError("User already registered");
+      throw new BadRequestError("Not found");
     }
 
     // 2. compare password
@@ -165,7 +172,7 @@ class AccessService {
     }
 
     // 3. check is verified
-    if (!existUser.verify) {
+    if (!existUser.verified) {
       const payload = {
         email: existUser.email,
         firstName: existUser.firstName,

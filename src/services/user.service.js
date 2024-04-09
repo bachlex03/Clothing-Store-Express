@@ -1,7 +1,10 @@
 "use strict";
 
 const { BadRequestError } = require("../core/error.response");
+const Database = require("../db/mongo.config");
 const userModel = require("../models/user.model");
+const profileModel = require("../models/profile.model");
+const addressModel = require("../models/address.model");
 
 const findOneByEmail = async (email) => {
   const user = await userModel.findOne({ email });
@@ -15,19 +18,44 @@ const findOneUser = async (email, password) => {
   return user;
 };
 
-const createUser = async ({ firstName, lastName, email, password }) => {
+const createUser = async ({
+  firstName = "",
+  lastName = "",
+  email,
+  password,
+}) => {
+  const mongo = await Database.getInstance();
+  let session = await mongo.startSession();
+
   try {
+    session.startTransaction();
+
+    const address = await addressModel.create({});
+
+    const profile = await profileModel.create({
+      profile_firstName: firstName,
+      profile_lastName: lastName,
+      profile_address: address._id,
+    });
+
     const newUser = await userModel.create({
-      firstName,
-      lastName,
       email,
       password,
+      user_profile: profile._id,
     });
+
+    await session.commitTransaction();
 
     return newUser;
   } catch (err) {
+    await session.abortTransaction();
+
     throw new BadRequestError(err);
+  } finally {
+    session.endSession();
   }
+
+  return null;
 };
 
 const updatePassword = async (email, password) => {

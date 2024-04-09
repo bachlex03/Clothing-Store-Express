@@ -12,7 +12,7 @@ const set = async (key = "", value = "") => {
 };
 
 const del = async (key = "") => {
-  await client.delete(key);
+  await client.del(key);
 
   return;
 };

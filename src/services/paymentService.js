@@ -18,36 +18,6 @@ const payInvoice = async (req) => {
     country = "",
   } = req.body;
 
-  const { email } = req.user;
-
-  console.log({
-    body: req.body,
-  });
-
-  console.log({
-    user: req.user,
-  });
-
-  if (!email) {
-    throw new AuthenticationError("User not found");
-  }
-
-  const user = await userService.findOneByEmail(email);
-  const profile = user.populate({
-    path: "user_profile",
-    populate: {
-      path: "profile_address",
-      model: "Address",
-    },
-  });
-  // const address = profile.profile_address;
-
-  console.log({
-    user,
-    profile,
-    address,
-  });
-
   if (
     !firstName ||
     !lastName ||
@@ -57,6 +27,37 @@ const payInvoice = async (req) => {
     !country
   ) {
     throw new BadRequestError("All fields are required");
+  }
+
+  // const { email } = req.user;
+  const email = "lov3rinve146@gmail.com";
+
+  if (!email) {
+    throw new AuthenticationError("User not found");
+  }
+
+  const user = await userService.findFullInfo(email);
+  const profile = user.user_profile;
+  const address = profile.profile_address;
+
+  const { profile_firstName, profile_lastName, profile_phoneNumber } = profile;
+
+  const {
+    address_addressLine,
+    address_city,
+    address_provide,
+    address_country,
+  } = address;
+
+  if (
+    profile_firstName !== firstName ||
+    profile_lastName !== lastName ||
+    address_addressLine !== addressLine ||
+    address_city !== city ||
+    address_provide !== province ||
+    address_country !== country
+  ) {
+    throw new BadRequestError("Profile information does not match");
   }
 };
 

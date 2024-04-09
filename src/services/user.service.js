@@ -7,13 +7,26 @@ const profileModel = require("../models/profile.model");
 const addressModel = require("../models/address.model");
 
 const findOneByEmail = async (email) => {
-  const user = await userModel.findOne({ email });
+  const user = await userModel.findOne({ email }).populate("user_profile");
 
   return user;
 };
 
 const findOneUser = async (email, password) => {
   const user = await userModel.findOne({ email, password });
+
+  return user;
+};
+
+const findFullInfo = async (email) => {
+  const user = await userModel.findOne({ email }).populate({
+    path: "user_profile",
+    model: "profile",
+    populate: {
+      path: "profile_address",
+      model: "address",
+    },
+  });
 
   return user;
 };
@@ -82,4 +95,5 @@ module.exports = {
   createUser,
   findOneUser,
   updatePassword,
+  findFullInfo,
 };

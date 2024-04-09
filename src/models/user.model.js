@@ -2,6 +2,8 @@
 
 const { model, Schema } = require("mongoose");
 
+const profileModel = require("./profile.model");
+
 const COLLECTION_NAME = "Users";
 const DOCUMENT_NAME = "User";
 
@@ -30,7 +32,7 @@ const userSchema = new Schema(
     },
     user_profile: {
       type: Schema.Types.ObjectId,
-      ref: "Profile",
+      ref: profileModel,
     },
   },
   {

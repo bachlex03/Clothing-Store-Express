@@ -16,8 +16,8 @@ class Database {
   static async connect(type = "mongodb") {
     await mongoose
       .connect(CONNECTION_STR, { maxPoolSize: 50 })
-      .then((connect) => {
-        this.instance = connect;
+      .then((connection) => {
+        this.instance = connection;
 
         console.log("Connected to database");
       })
@@ -26,9 +26,9 @@ class Database {
       });
   }
 
-  static async getInstance() {
+  static getInstance() {
     if (!this.instance) {
-      this.instance = await new Database();
+      this.instance = new Database();
     }
 
     return this.instance;

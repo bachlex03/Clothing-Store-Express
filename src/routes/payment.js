@@ -8,7 +8,7 @@ const {
 
 const paymentController = require("../controllers/paymentController");
 
-router.use("/", authenticationMiddleware);
+// router.use("/", authenticationMiddleware);
 
 /**
  * @swagger
@@ -33,6 +33,9 @@ router.use("/", authenticationMiddleware);
  *          type: string
  *         lastName:
  *          type: string
+ *         phoneNumber:
+ *          type: string
+ *          example: "0123456789"
  *         addressLine:
  *          type: string
  *          example: "106* Kha Van Can, Linh Dong, Thu Duc"
@@ -53,7 +56,7 @@ router.use("/", authenticationMiddleware);
  *        schema:
  *         type: object
  */
-router.use(authorizationMiddleware(["USER", "ADMIN"]));
+// router.use(authorizationMiddleware(["USER", "ADMIN"]));
 router.post("/", ErrorHandler(paymentController.payInvoice));
 router.get("/:id", ErrorHandler(paymentController.viewDetails));
 

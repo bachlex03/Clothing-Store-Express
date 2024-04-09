@@ -1,4 +1,5 @@
 const { model, Schema } = require("mongoose");
+const addressModel = require("./address.model");
 
 const COLLECTION_NAME = "Profiles";
 const DOCUMENT_NAME = "profile";
@@ -22,7 +23,7 @@ const profileSchema = new Schema(
     },
     profile_address: {
       type: Schema.Types.ObjectId,
-      ref: "Addresses",
+      ref: addressModel,
     },
   },
   {

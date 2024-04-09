@@ -1,6 +1,6 @@
 const { model, Schema } = require("mongoose");
 
-const COLLECTION_NAME = "Profile";
+const COLLECTION_NAME = "Profiles";
 const DOCUMENT_NAME = "profile";
 
 const profileSchema = new Schema(

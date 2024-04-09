@@ -62,6 +62,11 @@ class AccessService {
       name: firstName,
     });
 
+    console.log({
+      email,
+      token,
+    });
+
     RedisService.set(`${email}:token`, token);
 
     return {
@@ -71,6 +76,11 @@ class AccessService {
 
   // [POST] /verifyEmail
   async verifyEmail({ q, mailToken }) {
+    console.log({
+      q,
+      mailToken,
+    });
+
     if (!q && !mailToken) {
       throw new BadRequestError("Something went wrong");
     }
@@ -85,6 +95,10 @@ class AccessService {
     const { email } = decodedToken;
 
     const redisToken = await RedisService.get(`${email}:token`);
+
+    console.log({
+      redisToken,
+    });
 
     if (mailToken != redisToken) {
       throw new BadRequestError("Something went wrong");

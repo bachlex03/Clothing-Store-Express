@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
+const ErrorHandler = require("../utils/catchError");
+const {
+  authorizationMiddleware,
+  authenticationMiddleware,
+} = require("../middlewares/auth.middleware");
 
 const productController = require("../controllers/product.controller");
-
-const ErrorHandler = require("../utils/catchError");
 
 /**
  * @swagger
@@ -12,6 +15,45 @@ const ErrorHandler = require("../utils/catchError");
  *  description: CRUD products
  */
 
+/**
+ * @swagger
+ * /api/v1/products:
+ *   get:
+ *     tags: [Products]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/", ErrorHandler(productController.getAll));
+
+/**
+ * @swagger
+ * /api/v1/products/{slug}:
+ *   get:
+ *     tags: [Products]
+ *     parameters:
+ *       - name: slug
+ *         in: path
+ *         required: true
+ *         description: The slug of the product
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/:slug", ErrorHandler(productController.getBySlug));
+
+router.use("/", authenticationMiddleware);
+router.use(authorizationMiddleware(["ADMIN"]));
 /**
  * @swagger
  * /api/v1/products:
@@ -50,42 +92,6 @@ const ErrorHandler = require("../utils/catchError");
  */
 router.post("/", ErrorHandler(productController.create));
 
-/**
- * @swagger
- * /api/v1/products:
- *   get:
- *     tags: [Products]
- *     responses:
- *       '200':
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get("/", ErrorHandler(productController.getAll));
-
-/**
- * @swagger
- * /api/v1/products/{slug}:
- *   get:
- *     tags: [Products]
- *     parameters:
- *       - name: slug
- *         in: path
- *         required: true
- *         description: The slug of the product
- *         schema:
- *           type: string
- *     responses:
- *       '200':
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get("/:slug", ErrorHandler(productController.getBySlug));
-router.put("/", ErrorHandler(productController.create));
+// router.put("/", ErrorHandler(productController.create));
 
 module.exports = router;

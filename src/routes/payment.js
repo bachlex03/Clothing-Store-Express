@@ -38,6 +38,9 @@ router.use("/", authenticationMiddleware);
  *          example: "106* Kha Van Can, Linh Dong, Thu Duc"
  *         city:
  *          type: string
+ *          example: "Thu Duc"
+ *         province:
+ *          type: string
  *          example: "Ho Chi Minh"
  *         country:
  *          type: string
@@ -55,9 +58,3 @@ router.post("/", ErrorHandler(paymentController.payInvoice));
 router.get("/:id", ErrorHandler(paymentController.viewDetails));
 
 module.exports = router;
-// firstName = "",
-// lastName = "",
-// addressLine = "",
-// city = "",
-// province = "",
-// country = "",

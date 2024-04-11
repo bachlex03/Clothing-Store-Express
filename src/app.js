@@ -3,11 +3,13 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const compression = require("compression");
 const env = require("dotenv");
+const cors = require("cors");
 const passport = require("passport");
 const swaggerUI = require("swagger-ui-express");
 const swaggerJsDocs = require("swagger-jsdoc");
 
 const app = express();
+app.use(cors({ credentials: true, origin: "*" }));
 env.config();
 
 // config Swagger

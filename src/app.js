@@ -29,7 +29,7 @@ app.engine(
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "resources/views"));
 
-app.get("/", (req, res) => {
+app.get("/payment", (req, res) => {
   res.render("test");
 });
 

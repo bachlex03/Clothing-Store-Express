@@ -35,4 +35,19 @@ const vnpayController = require("../controllers/vnpay.controller");
  */
 router.post("/", ErrorHandler(vnpayController.createPaymentUrl));
 
+/**
+ * @swagger
+ * /api/v1/vnpay/vnpay_ipn:
+ *   get:
+ *     tags: [Vnpay]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/vnpay_ipn", ErrorHandler(vnpayController.vnpayIpn));
+
 module.exports = router;

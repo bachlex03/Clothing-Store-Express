@@ -7,6 +7,7 @@ const cors = require("cors");
 const passport = require("passport");
 const swaggerUI = require("swagger-ui-express");
 const swaggerJsDocs = require("swagger-jsdoc");
+const path = require("path");
 
 const app = express();
 app.use(cors({ credentials: true, origin: "*" }));
@@ -16,6 +17,21 @@ env.config();
 const options = require("./config/config.swagger");
 const specs = swaggerJsDocs(options);
 app.use("/swagger/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
+
+// config handlebars
+const { engine: handlebars } = require("express-handlebars");
+app.engine(
+  "hbs",
+  handlebars({
+    extname: "hbs",
+  })
+);
+app.set("view engine", "hbs");
+app.set("views", path.join(__dirname, "resources/views"));
+
+app.get("/", (req, res) => {
+  res.render("test");
+});
 
 // Init middleware
 app.use(morgan("dev"));
@@ -42,7 +58,6 @@ const router = require("./routes");
 app.use("/", router);
 
 // Handle error
-
 app.use((error, req, res, next) => {
   const statusCode = error.status || 500;
 

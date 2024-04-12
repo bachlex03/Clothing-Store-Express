@@ -10,8 +10,6 @@ const createPaymentUrl = async (req) => {
   let vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
   const amount = "100000";
 
-  console.log(hashSecret);
-
   const date = new Date();
 
   const { default: dateFormat } = await import("dateformat");

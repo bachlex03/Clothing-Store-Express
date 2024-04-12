@@ -7,6 +7,7 @@ const {
 const userService = require("./user.service");
 
 const payInvoice = async (req) => {
+  // 1. Check if all fields are provided
   const {
     firstName = "",
     lastName = "",
@@ -59,6 +60,8 @@ const payInvoice = async (req) => {
   ) {
     throw new BadRequestError("Profile information does not match");
   }
+
+  // 2.
 };
 
 const viewDetails = async (params) => {};

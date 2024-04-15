@@ -11,6 +11,11 @@ const DOCUMENT_NAME = "Product";
 
 const productSchema = new Schema(
   {
+    product_code: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     product_name: {
       type: String,
       default: "",
@@ -63,6 +68,10 @@ const productSchema = new Schema(
       type: String,
       slug: "product_name",
       unique: true,
+    },
+    product_status: {
+      type: String,
+      enum: ["Draft", "Published", "Scheduled"],
     },
   },
   {

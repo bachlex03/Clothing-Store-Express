@@ -6,7 +6,10 @@ const inventoryService = require("../services/inventory.service");
 const { getInfoObject } = require("../utils/getData");
 const { BadRequestError } = require("../core/error.response");
 const Database = require("../db/mongo.config");
-const { sizesEnum, colorsEnum } = require("../common/enum");
+const { sizesEnum, colorsEnum, statusEnum } = require("../common/enum");
+const generateProductCode = require("../utils/generate-product-code");
+
+const DEFAULT_STATUS = "Draft";
 
 // [POST] /api/v1/products
 const create = async (req) => {
@@ -19,9 +22,11 @@ const create = async (req) => {
     gender = "",
     brand = "",
     categoryId = null,
+    categoryName = "",
     price = 0,
     quantity = 0,
     images = [],
+    status = "Draft",
   } = req.body;
 
   images = req.files;
@@ -56,6 +61,13 @@ const create = async (req) => {
     throw new BadRequestError("quantity must be greater than 0");
   }
 
+  // Check status value
+  if (!statusEnum.includes(status)) {
+    status = DEFAULT_STATUS;
+  }
+
+  const code = generateProductCode({ brand, category: categoryName, gender });
+
   const filters = {
     product_slug: name.trim().toLowerCase().replace(/ /g, "-"),
   };
@@ -69,6 +81,7 @@ const create = async (req) => {
 
   const products = sizes.map(async (size) => {
     const update = {
+      product_code: code,
       product_name: name,
       product_description: description,
       product_type: type,
@@ -81,6 +94,7 @@ const create = async (req) => {
       },
       product_price: price,
       product_imgs: images ? images : [],
+      product_status: status,
     };
 
     let session = await mongo.startSession();

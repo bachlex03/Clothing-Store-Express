@@ -83,10 +83,13 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  *          default: "Clothe"
  *         brand:
  *          type: string
- *          default: "LV"
+ *          default: "louis vuitton"
  *         categoryId:
  *          type: string
  *          default: "66138a1018286bb5eafa3567"
+ *         categoryName:
+ *          type: string
+ *          default: "Outerwear"
  *         sizes:
  *          type: array
  *          example: ["S"]
@@ -99,6 +102,9 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  *         quantity:
  *          type: string
  *          example: "20"
+ *         status:
+ *          type: string
+ *          example: "Draft"
  *   responses:
  *    '200':
  *      description: OK

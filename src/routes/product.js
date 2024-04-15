@@ -75,9 +75,21 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  *          type: string
  *         description:
  *          type: string
- *         size:
+ *         gender:
  *          type: string
- *          example: "S"
+ *          default: "Unisex"
+ *         type:
+ *          type: string
+ *          default: "Clothe"
+ *         brand:
+ *          type: string
+ *          default: "LV"
+ *         categoryId:
+ *          type: string
+ *          default: "66138a1018286bb5eafa3567"
+ *         sizes:
+ *          type: array
+ *          example: ["S"]
  *         color:
  *          type: string
  *          example: "Red"
@@ -87,9 +99,6 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  *         quantity:
  *          type: string
  *          example: "20"
- *         images:
- *          type: array
- *          example: []
  *   responses:
  *    '200':
  *      description: OK

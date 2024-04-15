@@ -4,6 +4,7 @@ const { model, Schema } = require("mongoose");
 const mongoose = require("mongoose");
 var slug = require("mongoose-slug-updater");
 mongoose.plugin(slug);
+const categoryModel = require("./category.model");
 
 const COLLECTION_NAME = "Products";
 const DOCUMENT_NAME = "Product";
@@ -34,10 +35,22 @@ const productSchema = new Schema(
       type: [Object],
       default: [],
     },
-    // product_category: {
-    //   type: [Schema.Types.ObjectId],
-    // },
+    product_category: {
+      type: Schema.Types.ObjectId,
+      ref: categoryModel,
+      default: null,
+    },
     product_type: {
+      type: String,
+      enum: ["Clothe", "Trousers", "Shoes"],
+      trim: true,
+    },
+    product_gender: {
+      type: String,
+      enum: ["Man", "Woman", "Unisex"],
+      trim: true,
+    },
+    product_brand: {
       type: String,
       default: "",
       trim: true,

@@ -6,14 +6,19 @@ const inventoryService = require("../services/inventory.service");
 const { getInfoObject } = require("../utils/getData");
 const { BadRequestError } = require("../core/error.response");
 const Database = require("../db/mongo.config");
+const { sizesEnum, colorsEnum } = require("../common/enum");
 
 // [POST] /api/v1/products
 const create = async (req) => {
   let {
     name = "",
     description = "",
-    size = "",
+    sizes = [],
     color = "",
+    type = "",
+    gender = "",
+    brand = "",
+    categoryId = null,
     price = 0,
     quantity = 0,
     images = [],
@@ -23,39 +28,33 @@ const create = async (req) => {
 
   console.log({
     body: req.body,
-    images: req.files,
   });
 
+  // Check if product name is empty
   if (!name) {
     throw new BadRequestError("Product name is required");
   }
 
-  if (!size || !["S", "M", "L", "XL"].includes(size)) {
-    throw new BadRequestError("Invalid size value");
+  // Check if colors is empty or not in colorsEnum
+  if (!sizes.length > 0) {
+    throw new BadRequestError("Size is required");
+  } else {
+    sizes.forEach((size) => {
+      if (!sizesEnum.includes(size)) {
+        throw new BadRequestError("Invalid size value");
+      }
+    });
   }
 
-  if (
-    !color ||
-    !["Yellow", "Red", "Brown", "Gray", "Pink", "White"].includes(color)
-  ) {
+  // Check if sizes is empty or not in sizesEnum
+  if (!color || !colorsEnum.includes(color)) {
     throw new BadRequestError("Invalid color value");
   }
 
+  // Check if product quantity is less than 0
   if (quantity < 0) {
     throw new BadRequestError("quantity must be greater than 0");
   }
-
-  // images = imagesUpload.map((image) => {
-  //   let img = fs.readFileSync(image.path);
-  //   let encode_image = img.toString("base64");
-
-  //   let final = {
-  //     contentType: image.mimetype,
-  //     image: Buffer.from(encode_image, "base64"),
-  //   };
-
-  //   return final;
-  // });
 
   const filters = {
     product_slug: name.trim().toLowerCase().replace(/ /g, "-"),
@@ -66,44 +65,57 @@ const create = async (req) => {
     new: true,
   };
 
-  const update = {
-    product_name: name,
-    product_description: description,
-    $addToSet: {
-      product_colors: color,
-      product_sizes: size,
-    },
-    product_price: price,
-    product_imgs: images,
-  };
-
   const mongo = await Database.getInstance();
-  let session = await mongo.startSession();
 
-  try {
-    session.startTransaction();
+  const products = sizes.map(async (size) => {
+    const update = {
+      product_name: name,
+      product_description: description,
+      product_type: type,
+      product_gender: gender,
+      product_brand: brand,
+      product_category: categoryId,
+      $addToSet: {
+        product_colors: color,
+        product_sizes: size,
+      },
+      product_price: price,
+      product_imgs: images ? images : [],
+    };
 
-    const product = await productModel.findOneAndUpdate(filters, update, opts);
+    let session = await mongo.startSession();
 
-    await inventoryService.create({
-      productId: product._id,
-      quantity: quantity,
-      size: size,
-      color: color,
-    });
+    try {
+      session.startTransaction();
 
-    await session.commitTransaction();
+      const product = await productModel.findOneAndUpdate(
+        filters,
+        update,
+        opts
+      );
 
-    return product;
-  } catch (err) {
-    await session.abortTransaction();
+      await inventoryService.create({
+        productId: product._id,
+        quantity: quantity,
+        size: size,
+        color: color,
+      });
 
-    console.error(err);
-  } finally {
-    session.endSession();
-  }
+      await session.commitTransaction();
 
-  return null;
+      return product;
+    } catch (err) {
+      await session.abortTransaction();
+
+      console.error(err);
+
+      session.endSession();
+
+      return;
+    }
+  });
+
+  return products;
 };
 
 // [GET] /api/v1/products
@@ -174,3 +186,15 @@ module.exports = {
   getBySlug,
   getImages,
 };
+
+// images = imagesUpload.map((image) => {
+//   let img = fs.readFileSync(image.path);
+//   let encode_image = img.toString("base64");
+
+//   let final = {
+//     contentType: image.mimetype,
+//     image: Buffer.from(encode_image, "base64"),
+//   };
+
+//   return final;
+// });

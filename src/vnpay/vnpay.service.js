@@ -17,13 +17,14 @@ const createPaymentUrl = async (req) => {
     new Date(date.getTime() + 5 * 60),
     "yyyymmddHHmmss"
   );
-  const orderId = dateFormat(date, "HHmmss");
+  const ORDER_ID = dateFormat(date, "HHmmss");
   const LOCALE = "vn";
   const CURR_CODE = "VND";
   const ORDER_TYPE = "200000";
   const RETURN_URL = "http://localhost:3001/payment";
 
   const vnp_Params = {};
+
   vnp_Params["vnp_Amount"] = amount * 100;
   vnp_Params["vnp_Command"] = "pay";
   vnp_Params["vnp_CreateDate"] = createDate;
@@ -35,7 +36,7 @@ const createPaymentUrl = async (req) => {
   vnp_Params["vnp_OrderType"] = ORDER_TYPE;
   vnp_Params["vnp_ReturnUrl"] = RETURN_URL;
   vnp_Params["vnp_TmnCode"] = tmnCode;
-  vnp_Params["vnp_TxnRef"] = orderId;
+  vnp_Params["vnp_TxnRef"] = ORDER_ID;
   vnp_Params["vnp_Version"] = "2.1.0";
   //   vnp_Params["vnp_BankCode"] = "NCB"; // Optional - Ngân hàng thanh toán
 

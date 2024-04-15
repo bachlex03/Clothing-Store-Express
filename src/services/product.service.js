@@ -8,15 +8,23 @@ const { BadRequestError } = require("../core/error.response");
 const Database = require("../db/mongo.config");
 
 // [POST] /api/v1/products
-const create = async (body) => {
-  const {
+const create = async (req) => {
+  let {
     name = "",
     description = "",
     size = "",
     color = "",
     price = 0,
     quantity = 0,
-  } = body;
+    images = [],
+  } = req.body;
+
+  images = req.files;
+
+  console.log({
+    body: req.body,
+    images: req.files,
+  });
 
   if (!name) {
     throw new BadRequestError("Product name is required");
@@ -37,6 +45,18 @@ const create = async (body) => {
     throw new BadRequestError("quantity must be greater than 0");
   }
 
+  // images = imagesUpload.map((image) => {
+  //   let img = fs.readFileSync(image.path);
+  //   let encode_image = img.toString("base64");
+
+  //   let final = {
+  //     contentType: image.mimetype,
+  //     image: Buffer.from(encode_image, "base64"),
+  //   };
+
+  //   return final;
+  // });
+
   const filters = {
     product_slug: name.trim().toLowerCase().replace(/ /g, "-"),
   };
@@ -54,6 +74,7 @@ const create = async (body) => {
       product_sizes: size,
     },
     product_price: price,
+    product_imgs: images,
   };
 
   const mongo = await Database.getInstance();
@@ -130,8 +151,26 @@ const getBySlug = async (params) => {
   return result;
 };
 
+// [GET] /api/v1/products/:slug/images
+const getImages = async (params) => {
+  const { slug } = params;
+
+  let product = await productModel.findOne({
+    product_slug: slug,
+  });
+
+  if (!product) {
+    throw new NotFoundError("Product not found");
+  }
+
+  const images = product.product_imgs;
+
+  return images;
+};
+
 module.exports = {
   create,
   getAll,
   getBySlug,
+  getImages,
 };

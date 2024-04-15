@@ -172,7 +172,7 @@ class AccessService {
   }
 
   // [POST] /login
-  async login({ email = "", password = "" }) {
+  async login({ email = "", password = "" }, res) {
     // 1. check exist user
     const existUser = await findOneByEmail(email);
 

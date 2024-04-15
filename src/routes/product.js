@@ -1,10 +1,15 @@
 const express = require("express");
 const router = express.Router();
+const path = require("path");
 const ErrorHandler = require("../utils/catchError");
 const {
   authorizationMiddleware,
   authenticationMiddleware,
 } = require("../middlewares/auth.middleware");
+
+const {
+  upload: uploadMiddleware,
+} = require("../middlewares/upload.middleware");
 
 const productController = require("../controllers/product.controller");
 
@@ -52,8 +57,8 @@ router.get("/", ErrorHandler(productController.getAll));
  */
 router.get("/:slug", ErrorHandler(productController.getBySlug));
 
-router.use("/", authenticationMiddleware);
-router.use(authorizationMiddleware(["ADMIN"]));
+// router.use("/", authenticationMiddleware);
+// router.use(authorizationMiddleware(["ADMIN"]));
 /**
  * @swagger
  * /api/v1/products:
@@ -82,6 +87,9 @@ router.use(authorizationMiddleware(["ADMIN"]));
  *         quantity:
  *          type: string
  *          example: "20"
+ *         images:
+ *          type: array
+ *          example: []
  *   responses:
  *    '200':
  *      description: OK
@@ -90,7 +98,33 @@ router.use(authorizationMiddleware(["ADMIN"]));
  *        schema:
  *         type: object
  */
-router.post("/", ErrorHandler(productController.create));
+router.post(
+  "/",
+  uploadMiddleware.array("images", 10),
+  ErrorHandler(productController.create)
+);
+
+/**
+ * @swagger
+ * /api/v1/products/{slug}/images:
+ *   get:
+ *     tags: [Products]
+ *     parameters:
+ *       - name: slug
+ *         in: path
+ *         required: true
+ *         description: The slug of the product
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/:slug/images", ErrorHandler(productController.getImages));
 
 // router.put("/", ErrorHandler(productController.create));
 

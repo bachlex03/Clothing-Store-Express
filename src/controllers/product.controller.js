@@ -6,7 +6,7 @@ class ProductController {
     new CREATED({
       message: "Create successfully",
       statusCode: 201,
-      data: await productService.create(req.body),
+      data: await productService.create(req),
     }).send(res);
   }
 
@@ -15,6 +15,14 @@ class ProductController {
       message: "OK",
       statusCode: 200,
       data: await productService.getAll(),
+    }).send(res);
+  }
+
+  async getImages(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await productService.getImages(req.params),
     }).send(res);
   }
 

@@ -14,7 +14,7 @@ class AccessController {
     return new OK({
       message: "Login successfully",
       statusCode: 200,
-      data: await accessService.login(req.body),
+      data: await accessService.login(req.body, res),
     }).send(res);
   }
 

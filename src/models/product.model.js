@@ -31,8 +31,8 @@ const productSchema = new Schema(
       required: true,
     },
     product_imgs: {
-      type: [String],
-      default: [""],
+      type: [Object],
+      default: [],
     },
     // product_category: {
     //   type: [Schema.Types.ObjectId],

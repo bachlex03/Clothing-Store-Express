@@ -10,7 +10,8 @@ const swaggerJsDocs = require("swagger-jsdoc");
 const path = require("path");
 
 const app = express();
-app.use(cors({ credentials: true, origin: "*" }));
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+
 env.config();
 
 // config Swagger
@@ -28,6 +29,9 @@ app.engine(
 );
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "resources/views"));
+
+// config static file
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/payment", (req, res) => {
   res.render("test");

@@ -87,7 +87,7 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  *         categoryId:
  *          type: string
  *          default: "66138a1018286bb5eafa3567"
- *         categoryName:
+ *         category:
  *          type: string
  *          default: "Outerwear"
  *         sizes:

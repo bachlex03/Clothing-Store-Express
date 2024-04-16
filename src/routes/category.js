@@ -52,4 +52,19 @@ router.post("/", ErrorHandler(categoryController.create));
  */
 router.get("/", ErrorHandler(categoryController.getAll));
 
+/**
+ * @swagger
+ * /api/v1/categories/children:
+ *   get:
+ *     tags: [Categories]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/children", ErrorHandler(categoryController.getAllChildren));
+
 module.exports = router;

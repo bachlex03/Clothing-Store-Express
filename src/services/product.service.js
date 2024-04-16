@@ -22,7 +22,7 @@ const create = async (req) => {
     gender = "",
     brand = "",
     categoryId = null,
-    categoryName = "",
+    category = "",
     price = 0,
     quantity = 0,
     images = [],
@@ -66,7 +66,7 @@ const create = async (req) => {
     status = DEFAULT_STATUS;
   }
 
-  const code = generateProductCode({ brand, category: categoryName, gender });
+  const code = generateProductCode({ brand, category: category, gender });
 
   const filters = {
     product_slug: name.trim().toLowerCase().replace(/ /g, "-"),

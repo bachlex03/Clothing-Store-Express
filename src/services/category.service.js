@@ -41,7 +41,22 @@ const getAll = async () => {
   return null;
 };
 
+const getAllChildren = async () => {
+  try {
+    const categories = await categoryModel.find({
+      category_parentId: null,
+    });
+
+    return categories;
+  } catch (err) {
+    console.error(err);
+  }
+
+  return null;
+};
+
 module.exports = {
   create,
   getAll,
+  getAllChildren,
 };

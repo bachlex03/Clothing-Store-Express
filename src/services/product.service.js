@@ -9,6 +9,7 @@ const Database = require("../db/mongo.config");
 const { sizesEnum, colorsEnum, statusEnum } = require("../common/enum");
 const generateProductCode = require("../utils/generate-product-code");
 const cloundinaryService = require("../cloundinary/cloundService");
+const { deleteFile } = require("../utils/handle-os-file");
 
 const DEFAULT_STATUS = "Draft";
 
@@ -32,17 +33,17 @@ const create = async (req) => {
 
   images = req.files;
 
-  console.log({
-    body: req.body,
-  });
+  // console.log({
+  //   body: req.body,
+  // });
 
-  // cloundinaryService.uploadImage(
+  // const assetsResult = await cloundinaryService.uploadImage(
   //   "https://static1.squarespace.com/static/656f4e4dababbd7c042c4946/657236350931ee4538eea52c/65baf15103d8ad2826032a8a/1707422532886/how-to-stop-being-a-people-pleaser-1_1.jpg?format=1500w"
   // );
 
-  cloundinaryService.deleteImage("how-to-stop-being-a-people-pleaser-1_1");
+  // console.log(assetsResult);
 
-  return;
+  // cloundinaryService.deleteImage("how-to-stop-being-a-people-pleaser-1_1");
 
   // Check if product name is empty
   if (!name) {
@@ -89,7 +90,18 @@ const create = async (req) => {
     new: true,
   };
 
+  let saveImages = [];
+
+  for (let i = 0; i < images.length; i++) {
+    const result = await cloundinaryService.uploadImage(images[i].path);
+
+    saveImages.push(result);
+
+    deleteFile(images[i].path);
+  }
+
   const mongo = Database.getInstance();
+  let session = await mongo.startSession();
 
   const products = sizes.map(async (size) => {
     const update = {
@@ -105,11 +117,9 @@ const create = async (req) => {
         product_sizes: size,
       },
       product_price: price,
-      product_imgs: images ? images : [],
+      product_imgs: saveImages ? saveImages : [],
       product_status: status,
     };
-
-    let session = await mongo.startSession();
 
     try {
       session.startTransaction();
@@ -128,14 +138,16 @@ const create = async (req) => {
       });
 
       await session.commitTransaction();
-
-      return product;
     } catch (err) {
       await session.abortTransaction();
 
       console.error(err);
 
       session.endSession();
+
+      saveImages.forEach(async (image) => {
+        const response = await cloundinaryService.deleteImage(image.public_id);
+      });
 
       return;
     }

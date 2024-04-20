@@ -9,6 +9,33 @@ const categoryModel = require("./category.model");
 const COLLECTION_NAME = "Products";
 const DOCUMENT_NAME = "Product";
 
+const imageSchema = new Schema({
+  asset_id: {
+    type: String,
+    default: "",
+  },
+  public_id: {
+    type: String,
+    default: "",
+  },
+  format: {
+    type: String,
+    default: "",
+  },
+  resource_type: {
+    type: String,
+    default: "",
+  },
+  secure_url: {
+    type: String,
+    default: "",
+  },
+  original_filename: {
+    type: String,
+    default: "",
+  },
+});
+
 const productSchema = new Schema(
   {
     product_code: {

@@ -8,6 +8,7 @@ const { BadRequestError } = require("../core/error.response");
 const Database = require("../db/mongo.config");
 const { sizesEnum, colorsEnum, statusEnum } = require("../common/enum");
 const generateProductCode = require("../utils/generate-product-code");
+const cloundinaryService = require("../cloundinary/cloundService");
 
 const DEFAULT_STATUS = "Draft";
 
@@ -35,6 +36,14 @@ const create = async (req) => {
     body: req.body,
   });
 
+  // cloundinaryService.uploadImage(
+  //   "https://static1.squarespace.com/static/656f4e4dababbd7c042c4946/657236350931ee4538eea52c/65baf15103d8ad2826032a8a/1707422532886/how-to-stop-being-a-people-pleaser-1_1.jpg?format=1500w"
+  // );
+
+  cloundinaryService.deleteImage("how-to-stop-being-a-people-pleaser-1_1");
+
+  return;
+
   // Check if product name is empty
   if (!name) {
     throw new BadRequestError("Product name is required");
@@ -44,6 +53,9 @@ const create = async (req) => {
   if (!sizes.length > 0) {
     throw new BadRequestError("Size is required");
   } else {
+    if (typeof sizes === "string") {
+      sizes = sizes.split(",");
+    }
     sizes.forEach((size) => {
       if (!sizesEnum.includes(size)) {
         throw new BadRequestError("Invalid size value");
@@ -77,7 +89,7 @@ const create = async (req) => {
     new: true,
   };
 
-  const mongo = await Database.getInstance();
+  const mongo = Database.getInstance();
 
   const products = sizes.map(async (size) => {
     const update = {

@@ -19,6 +19,9 @@ const options = require("./config/config.swagger");
 const specs = swaggerJsDocs(options);
 app.use("/swagger/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
+// config cloundinary
+const cloudinary = require("./config/config.cloundinary");
+
 // config handlebars
 const { engine: handlebars } = require("express-handlebars");
 app.engine(

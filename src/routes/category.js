@@ -27,6 +27,7 @@ const categoryController = require("../controllers/category.controller");
  *          type: string
  *         parentId:
  *          type: string
+ *          example: ""
  *   responses:
  *    '200':
  *      description: OK

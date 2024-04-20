@@ -7,7 +7,7 @@ const skuSchema = new Schema(
   {
     sku_size: {
       type: String,
-      enum: ["S", "M", "L", "XL"],
+      enum: ["S", "M", "L", "XL", "2XL"],
       required: true,
     },
     sku_color: {

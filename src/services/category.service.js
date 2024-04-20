@@ -5,7 +5,7 @@ const { BadRequestError } = require("../core/error.response");
 const categoryModel = require("../models/category.model");
 
 const create = async (body) => {
-  const { name = "", parentId = null } = body;
+  let { name = "", parentId = null } = body;
 
   if (parentId !== Schema.Types.ObjectId) {
     parentId = null;

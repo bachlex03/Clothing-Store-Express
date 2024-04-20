@@ -96,10 +96,6 @@ class AccessService {
 
     const redisToken = await RedisService.get(`${email}:token`);
 
-    console.log({
-      redisToken,
-    });
-
     if (mailToken != redisToken) {
       throw new BadRequestError("Something went wrong");
     }

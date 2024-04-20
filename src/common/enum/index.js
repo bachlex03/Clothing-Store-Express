@@ -1,4 +1,4 @@
-const sizesEnum = ["S", "M", "L", "XL"];
+const sizesEnum = ["S", "M", "L", "XL", "2XL"];
 
 const colorsEnum = ["Yellow", "Red", "Brown", "Gray", "Pink", "White"];
 

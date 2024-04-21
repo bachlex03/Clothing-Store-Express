@@ -63,6 +63,10 @@ const productSchema = new Schema(
       enum: ["Yellow", "Red", "Brown", "Gray", "Pink", "White"],
       required: true,
     },
+    product_stocks: {
+      type: Number,
+      default: 0,
+    },
     product_imgs: {
       type: [Object],
       default: [],

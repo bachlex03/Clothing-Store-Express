@@ -37,14 +37,6 @@ const create = async (req) => {
   //   body: req.body,
   // });
 
-  // const assetsResult = await cloundinaryService.uploadImage(
-  //   "https://static1.squarespace.com/static/656f4e4dababbd7c042c4946/657236350931ee4538eea52c/65baf15103d8ad2826032a8a/1707422532886/how-to-stop-being-a-people-pleaser-1_1.jpg?format=1500w"
-  // );
-
-  // console.log(assetsResult);
-
-  // cloundinaryService.deleteImage("how-to-stop-being-a-people-pleaser-1_1");
-
   // Check if product name is empty
   if (!name) {
     throw new BadRequestError("Product name is required");
@@ -101,9 +93,8 @@ const create = async (req) => {
   }
 
   const mongo = Database.getInstance();
-  let session = await mongo.startSession();
 
-  const products = sizes.map(async (size) => {
+  const products = sizes.map(async (size, index) => {
     const update = {
       product_code: code,
       product_name: name,
@@ -116,10 +107,15 @@ const create = async (req) => {
         product_colors: color,
         product_sizes: size,
       },
+      $inc: {
+        product_stocks: parseInt(quantity),
+      },
       product_price: price,
       product_imgs: saveImages ? saveImages : [],
       product_status: status,
     };
+
+    let session = await mongo.startSession();
 
     try {
       session.startTransaction();
@@ -218,11 +214,74 @@ const getImages = async (params) => {
   return images;
 };
 
+// [GET] /api/v1/products?q=
+const getByQueryParam = async (query) => {
+  if (query.q === "min") {
+    const products = await productModel.find().populate("product_category");
+
+    if (!products) {
+      throw new NotFoundError("Products not found");
+    }
+    let results = [];
+
+    results = products.map((product) => {
+      let data = getInfoObject({
+        obj: product,
+        fields: [
+          "product_code",
+          "product_name",
+          "product_price",
+          "product_imgs",
+          "product_category",
+          "product_brand",
+          "product_slug",
+          "product_status",
+          "product_stocks",
+          "product_sizes",
+          "product_colors",
+          "product_type",
+        ],
+      });
+
+      if (data.product_category) {
+        data.product_category = getInfoObject({
+          obj: data.product_category,
+          fields: ["category_name", "category_slug"],
+        });
+      }
+
+      if (data.product_imgs) {
+        data.product_imgs = data.product_imgs.map((img) => {
+          let imgs = getInfoObject({
+            obj: img,
+            fields: ["public_id", "secure_url", "original_filename", "bytes"],
+          });
+
+          return imgs;
+        });
+      }
+
+      return data;
+    });
+
+    return results;
+  }
+  // else if (query.q === "full") {
+  // }
+
+  if (!products) {
+    throw new NotFoundError("Products not found");
+  }
+
+  return products;
+};
+
 module.exports = {
   create,
   getAll,
   getBySlug,
   getImages,
+  getByQueryParam,
 };
 
 // images = imagesUpload.map((image) => {

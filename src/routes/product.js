@@ -22,6 +22,27 @@ const productController = require("../controllers/product.controller");
 
 /**
  * @swagger
+ * /api/v1/products?q={q}:
+ *   get:
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: q is enum=[min, full].
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/", ErrorHandler(productController.getByQueryParam));
+
+/**
+ * @swagger
  * /api/v1/products:
  *   get:
  *     tags: [Products]

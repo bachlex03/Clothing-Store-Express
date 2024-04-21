@@ -46,6 +46,35 @@ const create = async ({
   return null;
 };
 
+const getAll = async () => {
+  const inventory = await inventoryModel.find();
+
+  if (!inventory) {
+    throw new NotFoundError("Inventory not found");
+  }
+
+  return inventory;
+};
+
+const getAllAndGroupByProductId = async () => {
+  const inventory = await inventoryModel.aggregate([
+    {
+      $group: {
+        _id: "$inventory_product",
+        inventory: {
+          $push: "$$ROOT",
+        },
+      },
+    },
+  ]);
+
+  if (!inventory) {
+    throw new NotFoundError("Inventory not found");
+  }
+
+  return inventory;
+};
+
 const getByProductId = async (productId, filters = {}) => {
   if (productId === Schema.Types.ObjectId) {
     throw new BadRequestError("Something wrong with product ID");
@@ -72,4 +101,6 @@ const getByProductId = async (productId, filters = {}) => {
 module.exports = {
   create,
   getByProductId,
+  getAll,
+  getAllAndGroupByProductId,
 };

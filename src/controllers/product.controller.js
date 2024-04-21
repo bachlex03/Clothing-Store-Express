@@ -33,6 +33,14 @@ class ProductController {
       data: await productService.getBySlug(req.params),
     }).send(res);
   }
+
+  async getByQueryParam(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await productService.getByQueryParam(req.query),
+    }).send(res);
+  }
 }
 
 module.exports = new ProductController();

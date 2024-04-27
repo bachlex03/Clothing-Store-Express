@@ -10,7 +10,7 @@ const Brands = {
 const Categories = {
   outerwear: "OW",
   dresses: "DRE",
-  "t-shirt": "TS",
+  "t-shirts": "TS",
   blouses: "BL",
   knitwear: "KW",
   pant: "PT",
@@ -27,6 +27,8 @@ const generateProductCode = ({ brand = "", category = "", gender = "" }) => {
   category = category.toLowerCase();
   gender = gender.toLowerCase();
 
+  console.log("category", category);
+
   brand = Brands[brand] ? Brands[brand] : "00";
   category = Categories[category] ? Categories[category] : "00";
   gender = Gender[gender] ? Gender[gender] : "0";
@@ -37,7 +39,7 @@ const generateProductCode = ({ brand = "", category = "", gender = "" }) => {
     gender,
   });
 
-  const uniqueIdentifier = Date.now().toString().substring(0, 7);
+  const uniqueIdentifier = Date.now().toString().substring(1, 10);
 
   const productCode = `#${brand}${category}${gender}-${uniqueIdentifier}`;
 

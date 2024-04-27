@@ -4,7 +4,7 @@ const { OK, CREATED } = require("../core/success.response");
 class paymentController {
   async payInvoice(req, res) {
     new CREATED({
-      message: "Payment successfully",
+      message: "Processing payment...",
       statusCode: 200,
       data: await paymentService.payInvoice(req),
     }).send(res);
@@ -15,6 +15,14 @@ class paymentController {
       message: "OK",
       statusCode: 200,
       data: await paymentService.viewDetails(req.params),
+    }).send(res);
+  }
+
+  async updateAddress(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await paymentService.updateAddress(req),
     }).send(res);
   }
 }

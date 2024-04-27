@@ -84,12 +84,14 @@ const create = async (req) => {
 
   let saveImages = [];
 
-  for (let i = 0; i < images.length; i++) {
-    const result = await cloundinaryService.uploadImage(images[i].path);
+  if (images.length) {
+    for (let i = 0; i < images.length; i++) {
+      const result = await cloundinaryService.uploadImage(images[i].path);
 
-    saveImages.push(result);
+      saveImages.push(result);
 
-    deleteFile(images[i].path);
+      deleteFile(images[i].path);
+    }
   }
 
   const mongo = Database.getInstance();

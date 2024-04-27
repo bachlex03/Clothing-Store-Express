@@ -4,24 +4,28 @@ const {
   vnpay: { hashSecret, tmnCode, vnpUrl },
 } = require("../config/config.env");
 
-const createPaymentUrl = async (req) => {
+const createPaymentUrl = async (amount) => {
+  try {
+    amount = parseInt(amount).toString();
+  } catch (err) {
+    throw new Error("Amount must be a number");
+  }
+
   let vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-  const amount = "100000";
 
   const date = new Date();
 
   const { default: dateFormat } = await import("dateformat");
 
   const createDate = dateFormat(date, "yyyymmddHHmmss");
-  const expireDate = dateFormat(
-    new Date(date.getTime() + 5 * 60),
-    "yyyymmddHHmmss"
-  );
+  const currTime = dateFormat(new Date(date.getTime()), "yyyymmddHHmmss");
+  const expireDate = parseInt(currTime) + 20 * 60;
+
   const ORDER_ID = dateFormat(date, "HHmmss");
   const LOCALE = "vn";
   const CURR_CODE = "VND";
   const ORDER_TYPE = "200000";
-  const RETURN_URL = "http://localhost:3001/payment";
+  const RETURN_URL = "http://localhost:3001/api/v1/vnpay/vnpay_ipn";
 
   const vnp_Params = {};
 
@@ -43,7 +47,7 @@ const createPaymentUrl = async (req) => {
   // Hash data
   const signData = new URLSearchParams(vnp_Params).toString();
   const hmac = crypto.createHmac("sha512", hashSecret);
-  var signed = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
+  var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
   vnp_Params["vnp_SecureHash"] = signed;
 
@@ -55,6 +59,7 @@ const createPaymentUrl = async (req) => {
 };
 
 const vnpayIpn = async (req) => {
+  console.log("In");
   const secureHash = req.query.vnp_SecureHash;
   const secureHashType = req.query.vnp_SecureHashType;
   const vnp_Params = req.query;
@@ -65,7 +70,7 @@ const vnpayIpn = async (req) => {
   const signData = new URLSearchParams(vnp_Params).toString();
   const hmac = crypto.createHmac("sha512", hashSecret);
 
-  var signed = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
+  var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
   if (secureHash === signed) {
     return {
@@ -98,7 +103,7 @@ const vnpayReturn = async (req) => {
   var signData = querystring.stringify(vnp_Params, { encode: false });
   var crypto = require("crypto");
   var hmac = crypto.createHmac("sha512", secretKey);
-  var signed = hmac.update(new Buffer(signData, "utf-8")).digest("hex");
+  var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
   if (secureHash === signed) {
     //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua

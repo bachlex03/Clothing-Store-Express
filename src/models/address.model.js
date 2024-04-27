@@ -5,7 +5,12 @@ const DOCUMENT_NAME = "address";
 
 const addressSchema = new Schema(
   {
-    address_addressLine: {
+    address_country: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    address_province: {
       type: String,
       default: "",
       trim: true,
@@ -15,12 +20,7 @@ const addressSchema = new Schema(
       default: "",
       trim: true,
     },
-    address_provide: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-    address_country: {
+    address_addressLine: {
       type: String,
       default: "",
       trim: true,

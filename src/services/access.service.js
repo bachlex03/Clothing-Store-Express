@@ -124,7 +124,7 @@ class AccessService {
     };
   }
 
-  // [POST] /register
+  // [POST] /auth/register
   async register(body) {
     const { firstName = "", lastName = "", email, password } = body;
 
@@ -177,7 +177,8 @@ class AccessService {
     }
 
     // 2. compare password
-    if (!bcrypt.compare(password, existUser.password)) {
+    const isMatch = await bcrypt.compare(password, existUser.password);
+    if (!isMatch) {
       throw new BadRequestError("Wrong password");
     }
 

@@ -14,7 +14,7 @@ const {
 } = require("../services/user.service");
 const User = require("../entities/user.entity");
 const { generateTokenPair, decode } = require("../auth/jwt");
-const { getInfoObject } = require("../utils/getData");
+const { getValueObj } = require("../utils/getValueObj");
 const { sendEmail, sendResetPassword } = require("../mailer/mailer.service");
 const RedisService = require("./redis.service");
 const { generateMailToken } = require("../auth/jwt");
@@ -115,7 +115,7 @@ class AccessService {
     const { accessToken, refreshToken } = generateTokenPair(payload);
 
     return {
-      user: getInfoObject({
+      user: getValueObj({
         obj: user,
         fields: ["firstName", "lastName", "email"],
       }),
@@ -199,6 +199,8 @@ class AccessService {
       };
     }
 
+    console.log("login success", existUser);
+
     // 3. generate tokens
     const payload = {
       firstName: existUser.firstName,
@@ -210,7 +212,7 @@ class AccessService {
     const { accessToken, refreshToken } = generateTokenPair(payload);
 
     return {
-      user: getInfoObject({
+      user: getValueObj({
         obj: existUser,
         fields: ["firstName", "lastName", "email"],
       }),

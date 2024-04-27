@@ -1,30 +1,127 @@
 const express = require("express");
-const { authorizationMiddleware } = require("../middlewares/auth.middleware");
+const userController = require("../controllers/user.controller");
 const router = express.Router();
-const passport = require("passport");
+const ErrorHandler = require("../utils/catchError");
+const {
+  authorizationMiddleware,
+  authenticationMiddleware,
+} = require("../middlewares/auth.middleware");
 
-const { getRedis } = require("../db/redis.config");
-const client = getRedis().instanceRedis;
-
-router.use(passport.authenticate("jwt", { session: false }));
-
+router.use("/", authenticationMiddleware);
 router.use(authorizationMiddleware(["USER"]));
-router.get("/profile", (req, res) => {
-  // const fn = async () => {
-  //   await client.set("user:1:mailToken", "213423");
 
-  //   const value = await client.get("user:1:mailToken");
+/**
+ * @swagger
+ * tags:
+ *  name: User
+ */
 
-  //   console.log({
-  //     value,
-  //   });
-  // };
+/**
+ * @swagger
+ * /api/v1/users/checkoutInfo:
+ *   get:
+ *     tags: [User]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/checkoutInfo", ErrorHandler(userController.getCheckoutInfo));
 
-  // fn();
+/**
+ * @swagger
+ * /api/v1/users/profile:
+ *   get:
+ *     tags: [User]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/profile", ErrorHandler(userController.getProfile));
 
-  res.json({
-    message: "test authorization",
-  });
-});
+/**
+ * @swagger
+ * /api/v1/users/addresses:
+ *   get:
+ *     tags: [User]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/addresses", ErrorHandler(userController.getAddress));
+
+/**
+ * @swagger
+ * /api/v1/users/addresses:
+ *  put:
+ *   tags: [User]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         addressLine:
+ *          type: string
+ *          example: "106* Kha Van Can, Linh Dong, Thu Duc"
+ *         city:
+ *          type: string
+ *          example: "Thu Duc"
+ *         province:
+ *          type: string
+ *          example: "Ho Chi Minh"
+ *         country:
+ *          type: string
+ *          example: "Vietnam"
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.put("/addresses", ErrorHandler(userController.updateAddresses));
+
+/**
+ * @swagger
+ * /api/v1/users/profile:
+ *  put:
+ *   tags: [User]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         firstName:
+ *          type: string
+ *         lastName:
+ *          type: string
+ *         phoneNumber:
+ *          type: string
+ *          example: "0123456789"
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.put("/profile", ErrorHandler(userController.updateProfile));
 
 module.exports = router;

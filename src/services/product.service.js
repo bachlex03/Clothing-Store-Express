@@ -3,7 +3,6 @@
 const productModel = require("../models/product.model");
 const categoryService = require("../services/category.service");
 const inventoryService = require("../services/inventory.service");
-const { getInfoObject } = require("../utils/getData");
 const { BadRequestError } = require("../core/error.response");
 const Database = require("../db/mongo.config");
 const { sizesEnum, colorsEnum, statusEnum } = require("../common/enum");
@@ -227,7 +226,7 @@ const getByQueryParam = async (query) => {
     let results = [];
 
     results = products.map((product) => {
-      let data = getInfoObject({
+      let data = getCheckoutInfoObject({
         obj: product,
         fields: [
           "product_code",
@@ -246,7 +245,7 @@ const getByQueryParam = async (query) => {
       });
 
       if (data.product_category) {
-        data.product_category = getInfoObject({
+        data.product_category = getCheckoutInfoObject({
           obj: data.product_category,
           fields: ["category_name", "category_slug"],
         });
@@ -254,7 +253,7 @@ const getByQueryParam = async (query) => {
 
       if (data.product_imgs) {
         data.product_imgs = data.product_imgs.map((img) => {
-          let imgs = getInfoObject({
+          let imgs = getCheckoutInfoObject({
             obj: img,
             fields: ["public_id", "secure_url", "original_filename", "bytes"],
           });

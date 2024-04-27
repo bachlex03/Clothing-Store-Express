@@ -18,11 +18,11 @@ class paymentController {
     }).send(res);
   }
 
-  async updateAddress(req, res) {
+  async updateAddresses(req, res) {
     new OK({
       message: "OK",
       statusCode: 200,
-      data: await paymentService.updateAddress(req),
+      data: await paymentService.updateAddresses(req),
     }).send(res);
   }
 }

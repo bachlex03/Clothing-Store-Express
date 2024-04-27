@@ -62,7 +62,7 @@ router.get("/:id", ErrorHandler(paymentController.viewDetails));
 
 /**
  * @swagger
- * /api/v1/payment/updateAddress:
+ * /api/v1/payment/updateAddresses:
  *  post:
  *   tags: [Payment]
  *   requestBody:
@@ -99,6 +99,9 @@ router.get("/:id", ErrorHandler(paymentController.viewDetails));
  *        schema:
  *         type: object
  */
-router.post("/updateAddress", ErrorHandler(paymentController.updateAddress));
+router.post(
+  "/updateAddresses",
+  ErrorHandler(paymentController.updateAddresses)
+);
 
 module.exports = router;

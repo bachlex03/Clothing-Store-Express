@@ -73,7 +73,7 @@ const payInvoice = async (req) => {
 
 const viewDetails = async (params) => {};
 
-const updateAddress = async (req) => {
+const updateAddresses = async (req) => {
   const {
     firstName = "",
     lastName = "",
@@ -84,8 +84,7 @@ const updateAddress = async (req) => {
     addressLine = "",
   } = req.body;
 
-  // const { email } = req.user;
-  const email = "lov3rinve146@gmail.com";
+  const { email } = req.user;
 
   if (!email) {
     throw new AuthenticationError("User not found");
@@ -103,7 +102,7 @@ const updateAddress = async (req) => {
     throw new BadRequestError("All fields are required");
   }
 
-  const user = await userService.findFullInfo(email);
+  const user = await userService.updateUserCheckout(email);
 
   const newProfileObj = {
     profile_firstName: firstName,
@@ -144,5 +143,5 @@ const updateAddress = async (req) => {
 module.exports = {
   payInvoice,
   viewDetails,
-  updateAddress,
+  updateAddresses,
 };

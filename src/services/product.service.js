@@ -9,6 +9,7 @@ const { sizesEnum, colorsEnum, statusEnum } = require("../common/enum");
 const generateProductCode = require("../utils/generate-product-code");
 const cloundinaryService = require("../cloundinary/cloundService");
 const { deleteFile } = require("../utils/handle-os-file");
+const { getValueObj } = require("../utils/getValueObj");
 
 const DEFAULT_STATUS = "Draft";
 
@@ -149,16 +150,18 @@ const create = async (req) => {
   return products;
 };
 
-// [GET] /api/v1/products
-const getAll = async () => {
-  const products = await productModel.find();
+// // [GET] /api/v1/products
+// const getAll = async () => {
+//   const products = await productModel.find();
 
-  if (!products) {
-    throw new NotFoundError("Products not found");
-  }
+//   console.log("products", products);
 
-  return products;
-};
+//   if (!products) {
+//     throw new NotFoundError("Products not found");
+//   }
+
+//   return products;
+// };
 
 // [GET] /api/v1/products/:slug
 const getBySlug = async (params) => {
@@ -222,7 +225,7 @@ const getByQueryParam = async (query) => {
     let results = [];
 
     results = products.map((product) => {
-      let data = getCheckoutInfoObject({
+      let data = getValueObj({
         obj: product,
         fields: [
           "product_code",
@@ -241,7 +244,7 @@ const getByQueryParam = async (query) => {
       });
 
       if (data.product_category) {
-        data.product_category = getCheckoutInfoObject({
+        data.product_category = getValueObj({
           obj: data.product_category,
           fields: ["category_name", "category_slug"],
         });
@@ -249,7 +252,7 @@ const getByQueryParam = async (query) => {
 
       if (data.product_imgs) {
         data.product_imgs = data.product_imgs.map((img) => {
-          let imgs = getCheckoutInfoObject({
+          let imgs = getValueObj({
             obj: img,
             fields: ["public_id", "secure_url", "original_filename", "bytes"],
           });
@@ -262,9 +265,9 @@ const getByQueryParam = async (query) => {
     });
 
     return results;
+  } else if (query.q === "full") {
+    return "testing...";
   }
-  // else if (query.q === "full") {
-  // }
 
   if (!products) {
     throw new NotFoundError("Products not found");
@@ -275,7 +278,7 @@ const getByQueryParam = async (query) => {
 
 module.exports = {
   create,
-  getAll,
+  // getAll,
   getBySlug,
   getImages,
   getByQueryParam,

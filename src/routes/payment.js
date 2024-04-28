@@ -58,6 +58,7 @@ const paymentController = require("../controllers/paymentController");
  */
 // router.use(authorizationMiddleware(["USER", "ADMIN"]));
 router.post("/", ErrorHandler(paymentController.payInvoice));
+
 router.get("/:id", ErrorHandler(paymentController.viewDetails));
 
 /**

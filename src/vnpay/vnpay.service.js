@@ -1,10 +1,12 @@
 const crypto = require("crypto");
+// const io = require("../config/config.socket");
 
 const {
   vnpay: { hashSecret, tmnCode, vnpUrl },
 } = require("../config/config.env");
 
 const createPaymentUrl = async (amount) => {
+  console.log("amount: ", amount);
   try {
     amount = parseInt(amount).toString();
   } catch (err) {
@@ -59,7 +61,6 @@ const createPaymentUrl = async (amount) => {
 };
 
 const vnpayIpn = async (req) => {
-  console.log("In");
   const secureHash = req.query.vnp_SecureHash;
   const secureHashType = req.query.vnp_SecureHashType;
   const vnp_Params = req.query;

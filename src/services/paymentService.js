@@ -7,34 +7,52 @@ const {
 const userService = require("./user.service");
 const vnpayService = require("../vnpay/vnpay.service.js");
 const inventoryService = require("./inventory.service");
+const productService = require("./product.service");
 
 const payInvoice = async (req) => {
-  // 1. Check if all fields are provided
-  checkInvoiceInfo(req);
+  // const info = ({
+  //   firstName = "",
+  //   lastName = "",
+  //   phoneNumber = "",
+  //   country = "",
+  //   province = "",
+  //   city = "",
+  //   addressLine = "",
+  // } = req.body);
+
+  // let { boughtItems, total } = req.body;
+  // boughtItems = JSON.parse(boughtItems);
+
+  // // 1. Check if all fields are provided
+  // checkInvoiceInfo({ ...info });
+
+  // const verifyTotal = checkTotalPrice(boughtItems);
+
+  // if (total !== verifyTotal) {
+  //   throw new BadRequestError("Total price does not match");
+  // }
 
   // 2. Process to payment
   const vnpayUrl = await vnpayService.createPaymentUrl(20000000);
 
   // 3. async product quantity
-  await inventoryService.reduceQuantity(boughtItems);
+  // await inventoryService.reduceQuantity(boughtItems);
 
   return {
     redirect: vnpayUrl,
   };
 };
 
-const checkInvoiceInfo = async (req) => {
+const checkInvoiceInfo = async ({
+  firstName = "",
+  lastName = "",
+  phoneNumber = "",
+  country = "",
+  province = "",
+  city = "",
+  addressLine = "",
+}) => {
   // 1. Check if all fields are provided
-  const {
-    firstName = "",
-    lastName = "",
-    phoneNumber = "",
-    country = "",
-    province = "",
-    city = "",
-    addressLine = "",
-    boughtItems = [],
-  } = req.body;
 
   const { email } = req.user;
 
@@ -80,6 +98,52 @@ const checkInvoiceInfo = async (req) => {
   }
 
   return true;
+};
+
+const checkTotalPrice = (boughtItems) => {
+  if (!boughtItems || boughtItems.length === 0) {
+    throw new BadRequestError("No items available");
+  }
+
+  const total = boughtItems.reduce(async (item) => {
+    const { slug, size, color, quantity } = item;
+
+    if (!slug || !quantity || !size || !color) {
+      throw new BadRequestError("Invalid item information");
+    }
+
+    const product = await productService.getBySlug(slug);
+
+    if (!product) {
+      throw new BadRequestError("Product not found");
+    }
+
+    const { _id } = product;
+
+    const inventory = await inventoryService.getByProductId(_id);
+
+    if (!inventory) {
+      throw new BadRequestError("Inventory not found");
+    }
+
+    const sku = inventory.find(
+      (item) => item.sku.sku_size === size && item.sku.sku_color === color
+    );
+
+    if (!sku) {
+      throw new BadRequestError("SKU not found");
+    }
+
+    const { sku_quantity } = sku;
+
+    if (quantity > sku_quantity) {
+      throw new BadRequestError("Not enough quantity");
+    }
+
+    total += product.product_price * quantity;
+  }, 0);
+
+  return total;
 };
 
 const viewDetails = async (params) => {};

@@ -8,11 +8,23 @@ const passport = require("passport");
 const swaggerUI = require("swagger-ui-express");
 const swaggerJsDocs = require("swagger-jsdoc");
 const path = require("path");
-
 const app = express();
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+const server = require("http").createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server, { cors: { origin: "*" } });
+
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
 env.config();
+
+io.on("connection", () => {
+  console.log(`Socket.io server is running`);
+});
 
 // config Swagger
 const options = require("./config/config.swagger");
@@ -75,4 +87,4 @@ app.use((error, req, res, next) => {
   });
 });
 
-module.exports = app;
+module.exports = server;

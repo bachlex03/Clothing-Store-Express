@@ -2,6 +2,9 @@ module.exports = {
   app: {
     port: process.env.PORT,
   },
+  socket: {
+    port: process.env.SOCKET_PORT,
+  },
   db: {
     host: process.env.DB_HOST_DEV,
     port: process.env.DB_PORT_DEV,

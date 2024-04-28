@@ -41,20 +41,20 @@ const productController = require("../controllers/product.controller");
  */
 router.get("/", ErrorHandler(productController.getByQueryParam));
 
-/**
- * @swagger
- * /api/v1/products:
- *   get:
- *     tags: [Products]
- *     responses:
- *       '200':
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get("/", ErrorHandler(productController.getAll));
+// /**
+//  * @swagger
+//  * /api/v1/products:
+//  *   get:
+//  *     tags: [Products]
+//  *     responses:
+//  *       '200':
+//  *         description: OK
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  */
+// router.get("/", ErrorHandler(productController.getAll));
 
 /**
  * @swagger

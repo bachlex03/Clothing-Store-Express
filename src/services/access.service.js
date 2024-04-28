@@ -13,11 +13,10 @@ const {
   updatePassword,
 } = require("../services/user.service");
 const User = require("../entities/user.entity");
-const { generateTokenPair, decode } = require("../auth/jwt");
+const { generateTokenPair, decode, generateMailToken } = require("../auth/jwt");
 const { getValueObj } = require("../utils/getValueObj");
 const { sendEmail, sendResetPassword } = require("../mailer/mailer.service");
 const RedisService = require("./redis.service");
-const { generateMailToken } = require("../auth/jwt");
 
 class AccessService {
   // [GET] /verify?q=
@@ -225,27 +224,80 @@ class AccessService {
   async recover(body) {
     const { email } = body;
 
-    const randomPassword = (await cryptoRandomString).default({
-      length: 10,
-      type: "base64",
-    });
+    // 3. generate tokens
+    const payload = {
+      email,
+    };
 
-    console.log(randomPassword);
+    const token = generateMailToken(payload);
 
-    const user = await updatePassword(email, randomPassword);
-
-    if (!user) {
-      throw new BadRequestError("User not found");
-    }
+    const resetUrl = `${process.env.REACT_URL}/reset-password?q=${token}`;
 
     sendResetPassword({
       to: email,
-      name: user.firstName,
-      randomPassword: randomPassword,
+      resetUrl: resetUrl,
     });
 
     return {
-      message: "Sended !",
+      message: "Sended to your email!",
+      redirect: resetUrl,
+    };
+  }
+
+  async resetPassword(query) {
+    const { q } = query;
+
+    if (!q) {
+      throw new AuthenticationError("Not permitted to access this page");
+    }
+
+    const decoded = decode(q);
+
+    if (!decoded) {
+      throw new AuthenticationError("Not permitted to access this page");
+    }
+
+    const { email } = decoded;
+
+    if (!decoded) {
+      let existRandomPassword = await RedisService.get(
+        `${email}:randomPassword`
+      );
+
+      if (existRandomPassword) {
+        await RedisService.del(`${email}:randomPassword`);
+      }
+
+      throw new AuthenticationError("Not permitted to access this page");
+    }
+
+    // Compare mailToken with token in redis
+
+    let existRandomPassword = await RedisService.get(`${email}:randomPassword`);
+
+    if (!existRandomPassword) {
+      let randomPassword = (await cryptoRandomString).default({
+        length: 10,
+        type: "base64",
+      });
+
+      const HashPassword = await bcrypt.hash(randomPassword, 10);
+
+      const user = await updatePassword(email, HashPassword);
+
+      if (!user) {
+        throw new BadRequestError("User not found");
+      }
+
+      await RedisService.set(`${email}:randomPassword`, randomPassword);
+
+      return {
+        resetPassword: randomPassword,
+      };
+    }
+
+    return {
+      resetPassword: existRandomPassword,
     };
   }
 }

@@ -32,10 +32,6 @@ const create = async (req) => {
 
   images = req.files;
 
-  // console.log({
-  //   body: req.body,
-  // });
-
   // Check if product name is empty
   if (!name) {
     throw new BadRequestError("Product name is required");

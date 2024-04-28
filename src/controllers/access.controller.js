@@ -44,9 +44,17 @@ class AccessController {
 
   async recover(req, res) {
     return new OK({
-      message: "Verify successfully",
+      message: "OK",
       statusCode: 200,
       data: await accessService.recover(req.body),
+    }).send(res);
+  }
+
+  async resetPassword(req, res) {
+    return new OK({
+      message: "Reset password successfully",
+      statusCode: 200,
+      data: await accessService.resetPassword(req.query),
     }).send(res);
   }
 }

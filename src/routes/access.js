@@ -162,4 +162,26 @@ router.post("/verifyEmail", ErrorHandler(accessController.verifyEmail));
  */
 router.post("/recover", ErrorHandler(accessController.recover));
 
+/**
+ * @swagger
+ * /api/v1/auth/reset-password:
+ *   get:
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: q is jwt mail token.
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/reset-password", ErrorHandler(accessController.resetPassword));
+
 module.exports = router;

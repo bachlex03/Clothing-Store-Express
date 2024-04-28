@@ -30,9 +30,9 @@ const generateMailToken = (payload) => {
   return mailToken;
 };
 
-const decode = async (token) => {
+const decode = (token) => {
   try {
-    const decoded = await Jwt.verify(token, secretKey);
+    const decoded = Jwt.verify(token, secretKey);
 
     return decoded;
   } catch (err) {

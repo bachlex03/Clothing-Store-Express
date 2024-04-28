@@ -57,11 +57,7 @@ const sendEmail = async ({ to = "", name = "" }) => {
   return randomToken;
 };
 
-const sendResetPassword = async ({
-  to = "",
-  name = "",
-  randomPassword = "",
-}) => {
+const sendResetPassword = async ({ to = "", name = "", resetUrl = "" }) => {
   const randomToken = Math.floor(100000 + Math.random() * 900000);
 
   var opts = {
@@ -72,7 +68,7 @@ const sendResetPassword = async ({
     template: "recover",
     context: {
       name,
-      resetPassword: randomPassword,
+      resetUrl: resetUrl,
     },
   };
 

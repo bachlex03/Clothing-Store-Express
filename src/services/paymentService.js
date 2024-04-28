@@ -6,8 +6,24 @@ const {
 } = require("../core/error.response");
 const userService = require("./user.service");
 const vnpayService = require("../vnpay/vnpay.service.js");
+const inventoryService = require("./inventory.service");
 
 const payInvoice = async (req) => {
+  // 1. Check if all fields are provided
+  checkInvoiceInfo(req);
+
+  // 2. Process to payment
+  const vnpayUrl = await vnpayService.createPaymentUrl(20000000);
+
+  // 3. async product quantity
+  await inventoryService.reduceQuantity(boughtItems);
+
+  return {
+    redirect: vnpayUrl,
+  };
+};
+
+const checkInvoiceInfo = async (req) => {
   // 1. Check if all fields are provided
   const {
     firstName = "",
@@ -17,10 +33,10 @@ const payInvoice = async (req) => {
     province = "",
     city = "",
     addressLine = "",
+    boughtItems = [],
   } = req.body;
 
-  // const { email } = req.user;
-  const email = "lov3rinve146@gmail.com";
+  const { email } = req.user;
 
   if (!email) {
     throw new AuthenticationError("User not found");
@@ -63,12 +79,7 @@ const payInvoice = async (req) => {
     throw new BadRequestError("Profile information does not match");
   }
 
-  // 2. Process to payment
-  const vnpayUrl = await vnpayService.createPaymentUrl(20000000);
-
-  return {
-    redirect: vnpayUrl,
-  };
+  return true;
 };
 
 const viewDetails = async (params) => {};

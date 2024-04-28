@@ -46,6 +46,40 @@ const create = async ({
   return null;
 };
 
+const reduceQuantity = async (items = []) => {
+  for (const item of items) {
+    const { productId, size, color, quantity } = item;
+
+    if (!productId || !size || !color || !quantity) {
+      throw new BadRequestError("Missing product information");
+    }
+
+    const filters = {
+      inventory_product: productId,
+      "sku.sku_size": size,
+      "sku.sku_color": color,
+    };
+
+    const update = {
+      $inc: {
+        "sku.sku_quantity": -quantity,
+      },
+    };
+
+    const opts = {
+      new: true,
+    };
+
+    try {
+      inventoryModel.findOneAndUpdate(filters, update, opts);
+    } catch (err) {
+      throw new BadRequestError(err);
+    }
+  }
+
+  return null;
+};
+
 const getAll = async () => {
   const inventory = await inventoryModel.find();
 
@@ -103,4 +137,5 @@ module.exports = {
   getByProductId,
   getAll,
   getAllAndGroupByProductId,
+  reduceQuantity,
 };

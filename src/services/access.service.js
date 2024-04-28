@@ -23,35 +23,37 @@ class AccessService {
   async verify({ q }) {
     // q is a jwt token
     if (!q) {
-      throw new AuthenticationError("Not permitted to access this page");
+      throw new AuthenticationError("Not permitted to access");
     }
 
-    const decodedToken = await decode(q);
+    const decodedToken = decode(q);
 
     if (!decodedToken) {
-      throw new AuthenticationError("Not permitted to access this page");
+      throw new AuthenticationError("Not permitted to access");
     }
 
     const { verified } = decodedToken;
 
     if (verified) {
-      throw new AuthenticationError("Not permitted to access this page");
+      throw new AuthenticationError(
+        "Your are verified or not permitted to access"
+      );
     }
 
-    return { message: "Can send email token" };
+    return null;
   }
 
   // [GET] /sendMailToken?q=
   async sendMailToken({ q }) {
     // q is a jwt token
     if (!q) {
-      throw new AuthenticationError("Not permitted to access this page");
+      throw new AuthenticationError("Not permitted to access");
     }
 
     const decodedToken = await decode(q);
 
     if (!decodedToken) {
-      throw new AuthenticationError("Not permitted to access this page");
+      throw new AuthenticationError("Not permitted to access");
     }
 
     const { email, firstName } = decodedToken;
@@ -87,7 +89,7 @@ class AccessService {
     const decodedToken = await decode(q);
 
     if (!decodedToken) {
-      throw new AuthenticationError("Not permitted to access this page");
+      throw new AuthenticationError("Not permitted to access");
     }
 
     // Compare mailToken with token in redis
@@ -244,61 +246,35 @@ class AccessService {
     };
   }
 
-  async resetPassword(query) {
-    const { q } = query;
+  async resetPassword(req) {
+    const { q } = req.query;
+    const { password, confirmPassword } = req.body;
 
     if (!q) {
-      throw new AuthenticationError("Not permitted to access this page");
+      throw new AuthenticationError("Not permitted to access");
+    }
+
+    if (password !== confirmPassword) {
+      throw new BadRequestError("Password not match");
     }
 
     const decoded = decode(q);
 
     if (!decoded) {
-      throw new AuthenticationError("Not permitted to access this page");
+      throw new AuthenticationError("Not permitted to access");
     }
 
     const { email } = decoded;
 
-    if (!decoded) {
-      let existRandomPassword = await RedisService.get(
-        `${email}:randomPassword`
-      );
+    const HashPassword = await bcrypt.hash(confirmPassword, 10);
 
-      if (existRandomPassword) {
-        await RedisService.del(`${email}:randomPassword`);
-      }
+    const user = await updatePassword(email, HashPassword);
 
-      throw new AuthenticationError("Not permitted to access this page");
+    if (!user) {
+      throw new BadRequestError("User not found");
     }
 
-    // Compare mailToken with token in redis
-
-    let existRandomPassword = await RedisService.get(`${email}:randomPassword`);
-
-    if (!existRandomPassword) {
-      let randomPassword = (await cryptoRandomString).default({
-        length: 10,
-        type: "base64",
-      });
-
-      const HashPassword = await bcrypt.hash(randomPassword, 10);
-
-      const user = await updatePassword(email, HashPassword);
-
-      if (!user) {
-        throw new BadRequestError("User not found");
-      }
-
-      await RedisService.set(`${email}:randomPassword`, randomPassword);
-
-      return {
-        resetPassword: randomPassword,
-      };
-    }
-
-    return {
-      resetPassword: existRandomPassword,
-    };
+    return null;
   }
 }
 

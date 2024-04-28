@@ -54,7 +54,7 @@ class AccessController {
     return new OK({
       message: "Reset password successfully",
       statusCode: 200,
-      data: await accessService.resetPassword(req.query),
+      data: await accessService.resetPassword(req),
     }).send(res);
   }
 }

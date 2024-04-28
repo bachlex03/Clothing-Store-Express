@@ -165,23 +165,45 @@ router.post("/recover", ErrorHandler(accessController.recover));
 /**
  * @swagger
  * /api/v1/auth/reset-password:
- *   get:
- *     tags: [Auth]
- *     parameters:
- *       - in: query
- *         name: q
- *         schema:
- *           type: string
- *         required: true
- *         description: q is jwt mail token.
- *     responses:
- *       '200':
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
+ *   post:
+ *    tags: [Auth]
+ *    parameters:
+ *      - in: query
+ *        name: q
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: q is jwt mail token.
+ *    requestBody:
+ *     required: true
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *        properties:
+ *         password:
+ *          type: string
+ *         confirmPassword:
+ *          type: string
+ *    responses:
+ *     '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ *         properties:
  */
-router.get("/reset-password", ErrorHandler(accessController.resetPassword));
+router.post("/reset-password", ErrorHandler(accessController.resetPassword));
 
 module.exports = router;
+
+// *   requestBody:
+// *    required: true
+// *    content:
+// *     application/json:
+// *      schema:
+// *        type: object
+// *        properties:
+// *         email:
+// *          type: string

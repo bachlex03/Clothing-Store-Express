@@ -1,6 +1,7 @@
 const { Schema } = require("mongoose");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 const inventoryModel = require("../models/inventory.model");
+const productModel = require("../models/product.model");
 
 const create = async ({
   productId = null,
@@ -48,10 +49,22 @@ const create = async ({
 
 const reduceQuantity = async (items = []) => {
   for (const item of items) {
-    const { productId, slug, size, color, quantity } = item;
+    let { productId, slug, size, color, quantity } = item;
 
     if (!productId || !slug || !size || !color || !quantity) {
       throw new BadRequestError("Missing product information");
+    }
+
+    const product = await productModel.findOne({ product_slug: slug });
+
+    if (!product) {
+      throw new BadRequestError("Product not found");
+    } else {
+      productId = product._id;
+
+      product.product_stocks -= quantity;
+
+      await product.save();
     }
 
     const filters = {
@@ -59,8 +72,6 @@ const reduceQuantity = async (items = []) => {
       "sku.sku_size": size,
       "sku.sku_color": color,
     };
-
-    console.log("quantity", quantity);
 
     const update = {
       $inc: {

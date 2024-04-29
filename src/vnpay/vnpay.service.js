@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-// const io = require("../config/config.socket");
 
 const {
   vnpay: { hashSecret, tmnCode, vnpUrl },
@@ -73,17 +72,21 @@ const vnpayIpn = async (req) => {
 
   var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
+  let data;
+
   if (secureHash === signed) {
-    return {
+    data = {
       RspCode: "00",
       message: "Payment success",
     };
   } else {
-    return {
+    data = {
       RspCode: "97",
       message: "Fail checksum",
     };
   }
+
+  _io.emit("payment", data);
 };
 
 const vnpayReturn = async (req) => {

@@ -8,10 +8,12 @@ const passport = require("passport");
 const swaggerUI = require("swagger-ui-express");
 const swaggerJsDocs = require("swagger-jsdoc");
 const path = require("path");
+
 const app = express();
 const server = require("http").createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, { cors: { origin: "*" } });
+const SocketService = require("./services/socket.service");
 
 app.use(
   cors({
@@ -22,9 +24,8 @@ app.use(
 
 env.config();
 
-io.on("connection", () => {
-  console.log(`Socket.io server is running`);
-});
+// global variable
+global._io = io;
 
 // config Swagger
 const options = require("./config/config.swagger");
@@ -33,6 +34,10 @@ app.use("/swagger/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
 // config cloundinary
 const cloudinary = require("./config/config.cloundinary");
+
+// socket.io
+
+global._io.on("connection", SocketService.connection);
 
 // config handlebars
 const { engine: handlebars } = require("express-handlebars");
@@ -45,12 +50,12 @@ app.engine(
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "resources/views"));
 
-// config static file
-app.use(express.static(path.join(__dirname, "public")));
-
 app.get("/payment", (req, res) => {
   res.render("test");
 });
+
+// config static file
+app.use(express.static(path.join(__dirname, "public")));
 
 // Init middleware
 app.use(morgan("dev"));
@@ -62,6 +67,9 @@ app.use(
     extended: true,
   })
 );
+
+// Init socket.io
+
 // init passport-jwt
 require("./auth/passport.config")(passport);
 app.use(passport.initialize());

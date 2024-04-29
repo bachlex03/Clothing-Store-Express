@@ -10,7 +10,7 @@ const inventoryService = require("./inventory.service");
 const productService = require("./product.service");
 
 const payInvoice = async (req) => {
-  const info = ({
+  const {
     firstName = "",
     lastName = "",
     phoneNumber = "",
@@ -18,47 +18,75 @@ const payInvoice = async (req) => {
     province = "",
     city = "",
     addressLine = "",
-  } = req.body);
+  } = req.body;
 
-  console.log("info", info);
+  const info = {
+    firstName,
+    lastName,
+    phoneNumber,
+    country,
+    province,
+    city,
+    addressLine,
+  };
 
-  let { boughtItems = [], total } = req.body;
+  let { boughtItems = [], totalPrice } = req.body;
 
-  // const boughtItems = JSON.stringify([
-  //   { slug: "test-test", size: "S", color: "Red", quantity: 1 },
-  // ]);
+  if (boughtItems.length === 0) {
+    throw new BadRequestError("No items available");
+  }
 
-  console.log("boughtItems", boughtItems);
-
-  return;
+  try {
+    totalPrice = parseInt(totalPrice) * 24000;
+  } catch (error) {
+    throw new BadRequestError("Invalid total price");
+  }
 
   // 1. Check if all fields are provided
-  checkInvoiceInfo({ ...info });
+  try {
+    const verifyInfo = await checkInvoiceInfo(req, { ...info });
+  } catch (error) {
+    throw new BadRequestError(error);
+  }
 
-  const verifyTotal = checkTotalPrice(boughtItems);
+  let boughtItemsAttackedId = [];
 
-  if (total !== verifyTotal) {
-    throw new BadRequestError("Total price does not match");
+  try {
+    const { totalPrice: verifyTotal, processedItems } =
+      await checkTotalPriceAndAttackId(boughtItems);
+
+    boughtItemsAttackedId = processedItems;
+
+    if (totalPrice !== verifyTotal * 24000) {
+      throw new BadRequestError("Total price does not match");
+    }
+  } catch (error) {
+    throw new BadRequestError(error);
   }
 
   // 2. Process to payment
-  const vnpayUrl = await vnpayService.createPaymentUrl(20000000, boughtItems);
+  const vnpayUrl = await vnpayService.createPaymentUrl(
+    totalPrice,
+    boughtItemsAttackedId
+  );
 
   return {
     redirect: vnpayUrl,
   };
 };
 
-const checkInvoiceInfo = async ({
-  firstName = "",
-  lastName = "",
-  phoneNumber = "",
-  country = "",
-  province = "",
-  city = "",
-  addressLine = "",
-}) => {
+const checkInvoiceInfo = async (req, info) => {
   // 1. Check if all fields are provided
+
+  const {
+    firstName = "",
+    lastName = "",
+    phoneNumber = "",
+    country = "",
+    province = "",
+    city = "",
+    addressLine = "",
+  } = info;
 
   const { email } = req.user;
 
@@ -78,18 +106,16 @@ const checkInvoiceInfo = async ({
     throw new BadRequestError("All fields are required");
   }
 
-  const user = await userService.findFullInfo(email);
-  const profile = user.user_profile;
-  const address = profile.profile_address;
+  const user = await userService.getCheckoutInfo(req);
 
-  const { profile_firstName, profile_lastName, profile_phoneNumber } = profile;
+  const { profile_firstName, profile_lastName, profile_phoneNumber } = user;
 
   const {
     address_addressLine,
     address_city,
     address_province,
     address_country,
-  } = address;
+  } = user;
 
   if (
     profile_firstName !== firstName ||
@@ -106,50 +132,63 @@ const checkInvoiceInfo = async ({
   return true;
 };
 
-const checkTotalPrice = (boughtItems) => {
+const checkTotalPriceAndAttackId = async (boughtItems) => {
   if (!boughtItems || boughtItems.length === 0) {
     throw new BadRequestError("No items available");
   }
 
-  const total = boughtItems.reduce(async (item) => {
-    const { slug, size, color, quantity } = item;
+  let processedItems = [];
 
-    if (!slug || !quantity || !size || !color) {
-      throw new BadRequestError("Invalid item information");
-    }
+  boughtItems = await Promise.all(
+    boughtItems.map(async (item) => {
+      const { slug, size, color, quantity, price } = item;
 
-    const product = await productService.getBySlug(slug);
+      if (!slug || !quantity || !size || !color || !price) {
+        console.log("Invalid item information");
+        throw new BadRequestError("Invalid item information");
+      }
 
-    if (!product) {
-      throw new BadRequestError("Product not found");
-    }
+      const product = await productService.getBySlug({ slug });
 
-    const { _id } = product;
+      if (!product) {
+        throw new BadRequestError("Product not found");
+      }
 
-    const inventory = await inventoryService.getByProductId(_id);
+      const { _id } = product;
 
-    if (!inventory) {
-      throw new BadRequestError("Inventory not found");
-    }
+      const inventory = await inventoryService.getByProductId(_id);
 
-    const sku = inventory.find(
-      (item) => item.sku.sku_size === size && item.sku.sku_color === color
-    );
+      if (!inventory) {
+        throw new BadRequestError("Inventory not found");
+      }
 
-    if (!sku) {
-      throw new BadRequestError("SKU not found");
-    }
+      const sku = inventory.find(
+        (item) => item.sku.sku_size === size && item.sku.sku_color === color
+      );
 
-    const { sku_quantity } = sku;
+      if (!sku) {
+        throw new BadRequestError("SKU not found");
+      }
 
-    if (quantity > sku_quantity) {
-      throw new BadRequestError("Not enough quantity");
-    }
+      const { sku_quantity } = sku;
 
-    total += product.product_price * quantity;
+      if (quantity > sku_quantity) {
+        throw new BadRequestError("Not enough quantity");
+      }
+
+      processedItems.push({ ...item, productId: _id.toString() });
+      return item;
+    })
+  );
+
+  const totalPrice = processedItems.reduce((acc, curr) => {
+    return acc + curr.price;
   }, 0);
 
-  return total;
+  return {
+    totalPrice,
+    processedItems,
+  };
 };
 
 const viewDetails = async (params) => {};

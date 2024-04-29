@@ -56,10 +56,6 @@ const createPaymentUrl = async (amount, boughtItems) => {
   vnpUrl += "?" + new URLSearchParams(vnp_Params).toString();
 
   global._paymentEvent.on("payment-success", async (data) => {
-    console.log("boughtItems", boughtItems);
-
-    console.log("Payment success", data);
-
     await inventoryService.reduceQuantity(boughtItems);
   });
 

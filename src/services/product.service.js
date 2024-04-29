@@ -1,9 +1,8 @@
 "use strict";
 
 const productModel = require("../models/product.model");
-const categoryService = require("../services/category.service");
 const inventoryService = require("../services/inventory.service");
-const { BadRequestError } = require("../core/error.response");
+const { BadRequestError, NotFoundError } = require("../core/error.response");
 const Database = require("../db/mongo.config");
 const { sizesEnum, colorsEnum, statusEnum } = require("../common/enum");
 const generateProductCode = require("../utils/generate-product-code");

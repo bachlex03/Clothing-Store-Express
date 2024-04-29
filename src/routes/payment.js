@@ -8,7 +8,7 @@ const {
 
 const paymentController = require("../controllers/paymentController");
 
-// router.use("/", authenticationMiddleware);
+router.use("/", authenticationMiddleware);
 
 /**
  * @swagger
@@ -48,6 +48,12 @@ const paymentController = require("../controllers/paymentController");
  *         country:
  *          type: string
  *          example: "Vietnam"
+ *         boughtItems:
+ *          type: array
+ *          example: [{"slug":"test-product","size":"S","color":"Red","quantity":1, "price": 100}]
+ *         totalPrice:
+ *          type: string
+ *          example: "100"
  *   responses:
  *    '200':
  *      description: OK
@@ -56,7 +62,7 @@ const paymentController = require("../controllers/paymentController");
  *        schema:
  *         type: object
  */
-// router.use(authorizationMiddleware(["USER", "ADMIN"]));
+router.use(authorizationMiddleware(["USER", "ADMIN"]));
 router.post("/", ErrorHandler(paymentController.payInvoice));
 
 router.get("/:id", ErrorHandler(paymentController.viewDetails));

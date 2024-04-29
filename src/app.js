@@ -15,6 +15,14 @@ const { Server } = require("socket.io");
 const io = new Server(server, { cors: { origin: "*" } });
 const SocketService = require("./services/socket.service");
 
+const EventEmitter = require("events");
+
+global._paymentEvent = new EventEmitter();
+
+setTimeout(() => {
+  global._paymentEvent.emit("payment-success", "data");
+}, 2000);
+
 app.use(
   cors({
     origin: true,
@@ -82,6 +90,7 @@ redis.initRedis();
 
 // Init routes
 const router = require("./routes");
+const { set } = require("lodash");
 app.use("/", router);
 
 // Handle error

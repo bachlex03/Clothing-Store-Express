@@ -1,11 +1,12 @@
 const crypto = require("crypto");
+const paymentEvent = require("../events/payment.event");
+const inventoryService = require("../services/inventory.service");
 
 const {
   vnpay: { hashSecret, tmnCode, vnpUrl },
 } = require("../config/config.env");
 
-const createPaymentUrl = async (amount) => {
-  console.log("amount: ", amount);
+const createPaymentUrl = async (amount, boughtItems) => {
   try {
     amount = parseInt(amount).toString();
   } catch (err) {
@@ -20,7 +21,7 @@ const createPaymentUrl = async (amount) => {
 
   const createDate = dateFormat(date, "yyyymmddHHmmss");
   const currTime = dateFormat(new Date(date.getTime()), "yyyymmddHHmmss");
-  const expireDate = parseInt(currTime) + 20 * 60;
+  const expireDate = parseInt(currTime) + 15000;
 
   const ORDER_ID = dateFormat(date, "HHmmss");
   const LOCALE = "vn";
@@ -54,6 +55,14 @@ const createPaymentUrl = async (amount) => {
 
   vnpUrl += "?" + new URLSearchParams(vnp_Params).toString();
 
+  global._paymentEvent.on("payment-success", async (data) => {
+    console.log("boughtItems", boughtItems);
+
+    console.log("Payment success", data);
+
+    await inventoryService.reduceQuantity(boughtItems);
+  });
+
   return {
     redirect: vnpUrl,
   };
@@ -79,6 +88,8 @@ const vnpayIpn = async (req) => {
       RspCode: "00",
       message: "Payment success",
     };
+
+    global._paymentEvent.emit("payment-success", data);
   } else {
     data = {
       RspCode: "97",
@@ -86,7 +97,7 @@ const vnpayIpn = async (req) => {
     };
   }
 
-  _io.emit("payment", data);
+  _io.emit("payment-status", data);
 };
 
 const vnpayReturn = async (req) => {

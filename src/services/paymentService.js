@@ -10,33 +10,39 @@ const inventoryService = require("./inventory.service");
 const productService = require("./product.service");
 
 const payInvoice = async (req) => {
-  // const info = ({
-  //   firstName = "",
-  //   lastName = "",
-  //   phoneNumber = "",
-  //   country = "",
-  //   province = "",
-  //   city = "",
-  //   addressLine = "",
-  // } = req.body);
+  const info = ({
+    firstName = "",
+    lastName = "",
+    phoneNumber = "",
+    country = "",
+    province = "",
+    city = "",
+    addressLine = "",
+  } = req.body);
 
-  // let { boughtItems, total } = req.body;
-  // boughtItems = JSON.parse(boughtItems);
+  console.log("info", info);
 
-  // // 1. Check if all fields are provided
-  // checkInvoiceInfo({ ...info });
+  let { boughtItems = [], total } = req.body;
 
-  // const verifyTotal = checkTotalPrice(boughtItems);
+  // const boughtItems = JSON.stringify([
+  //   { slug: "test-test", size: "S", color: "Red", quantity: 1 },
+  // ]);
 
-  // if (total !== verifyTotal) {
-  //   throw new BadRequestError("Total price does not match");
-  // }
+  console.log("boughtItems", boughtItems);
+
+  return;
+
+  // 1. Check if all fields are provided
+  checkInvoiceInfo({ ...info });
+
+  const verifyTotal = checkTotalPrice(boughtItems);
+
+  if (total !== verifyTotal) {
+    throw new BadRequestError("Total price does not match");
+  }
 
   // 2. Process to payment
-  const vnpayUrl = await vnpayService.createPaymentUrl(20000000);
-
-  // 3. async product quantity
-  // await inventoryService.reduceQuantity(boughtItems);
+  const vnpayUrl = await vnpayService.createPaymentUrl(20000000, boughtItems);
 
   return {
     redirect: vnpayUrl,

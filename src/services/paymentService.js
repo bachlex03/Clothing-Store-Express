@@ -18,7 +18,10 @@ const payInvoice = async (req) => {
     province = "",
     city = "",
     addressLine = "",
+    note = "",
   } = req.body;
+
+  const { email } = req.user;
 
   const info = {
     firstName,
@@ -64,10 +67,19 @@ const payInvoice = async (req) => {
     throw new BadRequestError(error);
   }
 
+  const invoiceInfo = {
+    invoice_user: email || "",
+    invoice_products: boughtItemsAttackedId,
+    invoice_note: note,
+    invoice_status: "unpaid",
+    invoice_total: totalPrice,
+  };
+
   // 2. Process to payment
   const vnpayUrl = await vnpayService.createPaymentUrl(
     totalPrice,
-    boughtItemsAttackedId
+    boughtItemsAttackedId,
+    invoiceInfo
   );
 
   return {
@@ -176,13 +188,21 @@ const checkTotalPriceAndAttackId = async (boughtItems) => {
         throw new BadRequestError("Not enough quantity");
       }
 
-      processedItems.push({ ...item, productId: _id.toString() });
+      processedItems.push({
+        _id,
+        product_name: product.product_name,
+        product_description: product.product_description,
+        product_size: size,
+        product_color: color,
+        product_quantity: quantity,
+        product_price: price,
+      });
       return item;
     })
   );
 
   const totalPrice = processedItems.reduce((acc, curr) => {
-    return acc + curr.price;
+    return acc + curr.product_price;
   }, 0);
 
   return {

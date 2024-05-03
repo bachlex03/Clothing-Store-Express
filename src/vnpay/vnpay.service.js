@@ -1,12 +1,13 @@
 const crypto = require("crypto");
 const paymentEvent = require("../events/payment.event");
 const inventoryService = require("../services/inventory.service");
+const invoiceService = require("../services/invoice.service");
 
 const {
   vnpay: { hashSecret, tmnCode, vnpUrl },
 } = require("../config/config.env");
 
-const createPaymentUrl = async (amount, boughtItems) => {
+const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
   try {
     amount = parseInt(amount).toString();
   } catch (err) {
@@ -57,6 +58,15 @@ const createPaymentUrl = async (amount, boughtItems) => {
 
   global._paymentEvent.on("payment-success", async (data) => {
     await inventoryService.reduceQuantity(boughtItems);
+
+    invoiceInfo.invoice_status = "paid";
+
+    await invoiceService.create({
+      userEmail: invoiceInfo.invoice_user,
+      status: invoiceInfo.invoice_status,
+      total: invoiceInfo.invoice_total,
+      boughtProducts: invoiceInfo.invoice_products,
+    });
   });
 
   return {
@@ -117,8 +127,6 @@ const vnpayReturn = async (req) => {
   var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
   if (secureHash === signed) {
-    //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
-
     res.render("success", { code: vnp_Params["vnp_ResponseCode"] });
   } else {
     res.render("success", { code: "97" });

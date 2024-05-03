@@ -49,33 +49,31 @@ const create = async ({
 
 const reduceQuantity = async (items = []) => {
   for (const item of items) {
-    let { productId, slug, size, color, quantity } = item;
+    let { _id, product_size, product_color, product_quantity } = item;
 
-    if (!productId || !slug || !size || !color || !quantity) {
+    if (!_id || !product_size || !product_color || !product_quantity) {
       throw new BadRequestError("Missing product information");
     }
 
-    const product = await productModel.findOne({ product_slug: slug });
+    const product = await productModel.findOne({ _id });
 
     if (!product) {
       throw new BadRequestError("Product not found");
     } else {
-      productId = product._id;
-
-      product.product_stocks -= quantity;
+      product.product_stocks -= product_quantity;
 
       await product.save();
     }
 
     const filters = {
-      inventory_product: productId,
-      "sku.sku_size": size,
-      "sku.sku_color": color,
+      inventory_product: _id,
+      "sku.sku_size": product_size,
+      "sku.sku_color": product_color,
     };
 
     const update = {
       $inc: {
-        "sku.sku_quantity": -quantity,
+        "sku.sku_quantity": -product_quantity,
       },
     };
 

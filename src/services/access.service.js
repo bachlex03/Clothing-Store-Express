@@ -200,8 +200,6 @@ class AccessService {
       };
     }
 
-    console.log("login success", existUser);
-
     // 3. generate tokens
     const payload = {
       firstName: existUser.firstName,

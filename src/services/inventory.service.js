@@ -13,10 +13,6 @@ const create = async ({
     throw new BadRequestError("Product ID is required");
   }
 
-  console.log({
-    productId,
-  });
-
   const filters = {
     inventory_product: productId,
     "sku.sku_size": size,
@@ -48,6 +44,8 @@ const create = async ({
 };
 
 const reduceQuantity = async (items = []) => {
+  console.log("items", items);
+
   for (const item of items) {
     let { _id, product_size, product_color, product_quantity } = item;
 
@@ -57,13 +55,12 @@ const reduceQuantity = async (items = []) => {
 
     const product = await productModel.findOne({ _id });
 
-    if (!product) {
-      throw new BadRequestError("Product not found");
-    } else {
-      product.product_stocks -= product_quantity;
+    product.product_stocks -= product_quantity;
 
-      await product.save();
-    }
+    console.log("product_quantity", product_quantity);
+    console.log("product.product_stocks", product.product_stocks);
+
+    await product.save();
 
     const filters = {
       inventory_product: _id,
@@ -77,8 +74,11 @@ const reduceQuantity = async (items = []) => {
       },
     };
 
+    console.log("product.product_stocks", -product_quantity);
+
     const opts = {
       new: true,
+      upsert: true,
     };
 
     try {

@@ -6,6 +6,7 @@ const invoiceService = require("../services/invoice.service");
 const {
   vnpay: { hashSecret, tmnCode, vnpUrl },
 } = require("../config/config.env");
+const { BadRequestError } = require("../core/error.response");
 
 const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
   try {
@@ -69,9 +70,7 @@ const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
     });
   });
 
-  return {
-    redirect: vnpUrl,
-  };
+  return vnpUrl;
 };
 
 const vnpayIpn = async (req) => {
@@ -102,8 +101,6 @@ const vnpayIpn = async (req) => {
       message: "Fail checksum",
     };
   }
-
-  _io.emit("payment-status", data);
 };
 
 const vnpayReturn = async (req) => {

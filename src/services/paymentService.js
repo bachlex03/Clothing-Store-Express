@@ -21,6 +21,8 @@ const payInvoice = async (req) => {
     note = "",
   } = req.body;
 
+  let { boughtItems = [], totalPrice } = req.body;
+
   const { email } = req.user;
 
   const info = {
@@ -33,8 +35,6 @@ const payInvoice = async (req) => {
     addressLine,
   };
 
-  let { boughtItems = [], totalPrice } = req.body;
-
   if (boughtItems.length === 0) {
     throw new BadRequestError("No items available");
   }
@@ -45,9 +45,8 @@ const payInvoice = async (req) => {
     throw new BadRequestError("Invalid total price");
   }
 
-  // 1. Check if all fields are provided
   try {
-    const verifyInfo = await checkInvoiceInfo(req, { ...info });
+    await checkInvoiceInfo(req, { ...info });
   } catch (error) {
     throw new BadRequestError(error);
   }
@@ -55,10 +54,10 @@ const payInvoice = async (req) => {
   let boughtItemsAttackedId = [];
 
   try {
-    const { totalPrice: verifyTotal, processedItems } =
+    const { totalPrice: verifyTotal, processedProducts } =
       await checkTotalPriceAndAttackId(boughtItems);
 
-    boughtItemsAttackedId = processedItems;
+    boughtItemsAttackedId = processedProducts;
 
     if (totalPrice !== verifyTotal * 24000) {
       throw new BadRequestError("Total price does not match");
@@ -83,7 +82,7 @@ const payInvoice = async (req) => {
   );
 
   return {
-    redirect: vnpayUrl,
+    url: vnpayUrl,
   };
 };
 
@@ -149,14 +148,11 @@ const checkTotalPriceAndAttackId = async (boughtItems) => {
     throw new BadRequestError("No items available");
   }
 
-  let processedItems = [];
-
-  boughtItems = await Promise.all(
+  let boughtItemsAttackedId = await Promise.all(
     boughtItems.map(async (item) => {
       const { slug, size, color, quantity, price } = item;
 
       if (!slug || !quantity || !size || !color || !price) {
-        console.log("Invalid item information");
         throw new BadRequestError("Invalid item information");
       }
 
@@ -174,21 +170,21 @@ const checkTotalPriceAndAttackId = async (boughtItems) => {
         throw new BadRequestError("Inventory not found");
       }
 
-      const sku = inventory.find(
+      const inventorySku = inventory.find(
         (item) => item.sku.sku_size === size && item.sku.sku_color === color
       );
 
-      if (!sku) {
-        throw new BadRequestError("SKU not found");
+      if (!inventorySku) {
+        throw new BadRequestError("Type of product not found");
       }
 
-      const { sku_quantity } = sku;
+      const sku_quantity = inventorySku.sku.sku_quantity;
 
       if (quantity > sku_quantity) {
-        throw new BadRequestError("Not enough quantity");
+        throw new BadRequestError("Not enough inventory quantity");
       }
 
-      processedItems.push({
+      return {
         _id,
         product_name: product.product_name,
         product_description: product.product_description,
@@ -196,18 +192,17 @@ const checkTotalPriceAndAttackId = async (boughtItems) => {
         product_color: color,
         product_quantity: quantity,
         product_price: price,
-      });
-      return item;
+      };
     })
   );
 
-  const totalPrice = processedItems.reduce((acc, curr) => {
+  const totalPrice = boughtItemsAttackedId.reduce((acc, curr) => {
     return acc + curr.product_price;
   }, 0);
 
   return {
     totalPrice,
-    processedItems,
+    processedProducts: boughtItemsAttackedId,
   };
 };
 

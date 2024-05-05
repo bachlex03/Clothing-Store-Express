@@ -8,7 +8,7 @@ const {
 } = require("../middlewares/auth.middleware");
 
 router.use("/", authenticationMiddleware);
-router.use(authorizationMiddleware(["USER"]));
+router.use(authorizationMiddleware(["USER", "ADMIN"]));
 
 /**
  * @swagger
@@ -60,6 +60,21 @@ router.get("/profile", ErrorHandler(userController.getProfile));
  *               type: object
  */
 router.get("/addresses", ErrorHandler(userController.getAddress));
+
+/**
+ * @swagger
+ * /api/v1/users/invoices:
+ *   get:
+ *     tags: [User]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/invoices", ErrorHandler(userController.getInvoices));
 
 /**
  * @swagger

@@ -5,10 +5,11 @@ const Database = require("../db/mongo.config");
 const userModel = require("../models/user.model");
 const profileModel = require("../models/profile.model");
 const addressModel = require("../models/address.model");
+const InvoiceModel = require("../models/invoice.model");
 const { getValueObj } = require("../utils/getValueObj");
 
 const findOneByEmail = async (email) => {
-  const user = await userModel.findOne({ email }).populate("user_profile");
+  const user = await userModel.findOne({ email }).lean().exec();
 
   return user;
 };
@@ -75,16 +76,55 @@ const updateUserCheckout = async (email) => {
 
 const getProfile = async (req) => {
   const { email } = req.user;
+
+  const user = await userModel.findOne({ email }).populate({
+    path: "user_profile",
+    model: "profile",
+  });
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  return getValueObj({
+    obj: user.user_profile,
+    fields: ["profile_firstName", "profile_lastName", "profile_phoneNumber"],
+  });
 };
 
 const getAddress = async (req) => {
   const { email } = req.user;
+
+  const user = await userModel.findOne({ email }).populate({
+    path: "user_profile",
+    model: "profile",
+    populate: {
+      path: "profile_address",
+      model: "address",
+    },
+  });
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const address = user.user_profile.profile_address;
+
+  return getValueObj({
+    obj: address,
+    fields: [
+      "address_addressLine",
+      "address_city",
+      "address_province",
+      "address_country",
+    ],
+  });
 };
 
-const updateAddresses = async (body) => {
-  const { email } = req.user;
+const updateAddresses = async (req) => {
+  const { addressLine, city, province, country } = req.body;
 
-  const { addressLine, city, province, country } = body;
+  const { email } = req.user;
 
   const user = await userModel.findOne({ email }).populate({
     path: "user_profile",
@@ -108,13 +148,21 @@ const updateAddresses = async (body) => {
 
   await address.save();
 
-  return address;
+  return getValueObj({
+    obj: address,
+    fields: [
+      "address_addressLine",
+      "address_city",
+      "address_province",
+      "address_country",
+    ],
+  });
 };
 
-const updateProfile = async (body) => {
+const updateProfile = async (req) => {
   const { email } = req.user;
 
-  const { firstName = "", lastName = "", phoneNumber = "" } = body;
+  const { firstName = "", lastName = "", phoneNumber = "" } = req.body;
 
   const user = await userModel.findOne({ email }).populate({
     path: "user_profile",
@@ -133,7 +181,10 @@ const updateProfile = async (body) => {
 
   await profile.save();
 
-  return profile;
+  return getValueObj({
+    obj: profile,
+    fields: ["profile_firstName", "profile_lastName", "profile_phoneNumber"],
+  });
 };
 
 const createUser = async ({
@@ -195,6 +246,29 @@ const updatePassword = async (email, password) => {
   return null;
 };
 
+const getInvoices = async (req) => {
+  const { email } = req.user;
+
+  const user = await findOneByEmail(email);
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const results = await InvoiceModel.find({ invoice_user: user._id })
+    .lean()
+    .exec();
+
+  if (results.length === 0) {
+    return [];
+  }
+
+  return getValueObj({
+    obj: results,
+    fields: ["invoice_status", "invoice_total", "invoice_products"],
+  });
+};
+
 module.exports = {
   findOneByEmail,
   createUser,
@@ -206,4 +280,5 @@ module.exports = {
   updateUserCheckout,
   updateAddresses,
   updateProfile,
+  getInvoices,
 };

@@ -30,7 +30,7 @@ class paymentController {
     new OK({
       message: "OK",
       statusCode: 200,
-      data: await userService.updateAddresses(req.body),
+      data: await userService.updateAddresses(req),
     }).send(res);
   }
 
@@ -38,7 +38,15 @@ class paymentController {
     new OK({
       message: "OK",
       statusCode: 200,
-      data: await userService.updateProfile(req.body),
+      data: await userService.updateProfile(req),
+    }).send(res);
+  }
+
+  async getInvoices(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await userService.getInvoices(req),
     }).send(res);
   }
 }

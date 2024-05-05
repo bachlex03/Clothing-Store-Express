@@ -2,6 +2,7 @@
 
 const { BadRequestError } = require("../core/error.response");
 const invoiceModel = require("../models/invoice.model");
+const userModel = require("../models/user.model");
 const userService = require("./user.service");
 
 const create = async ({
@@ -27,7 +28,13 @@ const create = async ({
     throw new BadRequestError("Bought products is required");
   }
 
-  const { _id } = await userService.findOneByEmail(userEmail);
+  const user = await userService.findOneByEmail(userEmail);
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const { _id } = user;
 
   const invoice = invoiceModel.create({
     invoice_user: _id,
@@ -44,20 +51,26 @@ const create = async ({
   return invoice;
 };
 
-module.exports = {
-  create,
+const getByUserEmail = async (email) => {
+  const user = await userModel.findOne({ email }).lean().exec();
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const invoices = await invoiceModel
+    .findOne({ invoice_user: user._id })
+    .lean()
+    .exec();
+
+  if (!invoices) {
+    return [];
+  }
+
+  return invoices;
 };
 
-// invoice_product;
-// product_name;
-// product_description;
-// product_size;
-// product_color;
-// product_quantity;
-// product_price;
-
-// invoice_user;
-// invoice_products;
-// invoice_note;
-// invoice_status;
-// invoice_total;
+module.exports = {
+  create,
+  getByUserEmail,
+};

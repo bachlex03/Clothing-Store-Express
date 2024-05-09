@@ -2,6 +2,9 @@
 
 const { AuthenticationError } = require("../core/error.response");
 const passport = require("passport");
+const AccessControl = require("accesscontrol");
+
+const rbac = new AccessControl();
 
 const authorizationMiddleware = (roles = []) => {
   return (req, res, next) => {
@@ -39,4 +42,5 @@ const authenticationMiddleware = (req, res, next) => {
 module.exports = {
   authorizationMiddleware,
   authenticationMiddleware,
+  rbac,
 };

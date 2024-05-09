@@ -134,8 +134,6 @@ const create = async (req) => {
     } catch (err) {
       await session.abortTransaction();
 
-      console.error(err);
-
       session.endSession();
 
       saveImages.forEach(async (image) => {

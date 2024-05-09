@@ -6,9 +6,10 @@ const {
   authorizationMiddleware,
   authenticationMiddleware,
 } = require("../middlewares/auth.middleware");
+const { grantAccess } = require("../middlewares/rbac");
 
 router.use("/", authenticationMiddleware);
-router.use(authorizationMiddleware(["USER", "ADMIN"]));
+// router.use(authorizationMiddleware(["USER", "ADMIN"]));
 
 /**
  * @swagger
@@ -29,7 +30,11 @@ router.use(authorizationMiddleware(["USER", "ADMIN"]));
  *             schema:
  *               type: object
  */
-router.get("/checkoutInfo", ErrorHandler(userController.getCheckoutInfo));
+router.get(
+  "/checkoutInfo",
+  grantAccess("readAny", "user"),
+  ErrorHandler(userController.getCheckoutInfo)
+);
 
 /**
  * @swagger
@@ -44,7 +49,11 @@ router.get("/checkoutInfo", ErrorHandler(userController.getCheckoutInfo));
  *             schema:
  *               type: object
  */
-router.get("/profile", ErrorHandler(userController.getProfile));
+router.get(
+  "/profile",
+  grantAccess("readOwn", "user"),
+  ErrorHandler(userController.getProfile)
+);
 
 /**
  * @swagger

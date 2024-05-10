@@ -2,22 +2,6 @@ const { AuthenticationError } = require("../core/error.response");
 const { rbac } = require("./auth.middleware");
 const roleList = require("../services/rbac.service");
 
-// let grantList = [
-//   {
-//     role: "ADMIN",
-//     resource: "user",
-//     action: "read:any",
-//     attributes: "*, !views",
-//   },
-
-//   {
-//     role: "USER",
-//     resource: "user",
-//     action: "read:own",
-//     attributes: "*, !rating, !views",
-//   },
-// ];
-
 const grantAccess = (action, resource) => {
   return async (req, res, next) => {
     try {

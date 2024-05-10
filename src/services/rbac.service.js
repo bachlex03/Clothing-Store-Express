@@ -76,9 +76,6 @@ const roleList = async ({
 }) => {
   try {
     // 1. userId
-    const test = await RoleModel.find();
-
-    console.log("test", test);
 
     // 2. get role list
     const roles = await RoleModel.aggregate([
@@ -120,9 +117,6 @@ const roleList = async ({
       },
     ]);
 
-    console.log("roles", roles);
-
-    // 3. return role list
     return roles;
   } catch (error) {
     return [];

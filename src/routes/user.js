@@ -6,7 +6,7 @@ const {
   authorizationMiddleware,
   authenticationMiddleware,
 } = require("../middlewares/auth.middleware");
-const { grantAccess } = require("../middlewares/rbac");
+const { grantAccess } = require("../middlewares/rbac.middleware");
 
 router.use("/", authenticationMiddleware);
 // router.use(authorizationMiddleware(["USER", "ADMIN"]));

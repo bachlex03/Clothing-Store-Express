@@ -24,16 +24,16 @@ const rbacController = require("../controllers/rbac.controller");
  *        properties:
  *         name:
  *          type: string
- *          example: "admin"
+ *          example: "ADMIN"
  *         description:
  *          type: string
- *          example: "admin"
+ *          example: "ADMIN"
  *         force:
  *          type: string
  *          example: true
  *         grants:
  *          type: array
- *          example: [{"resource": "6639de2c29e8fd28a2db1548", "actions": ["update:any", "read:any", "delete:any"], "attributes": "*" }, {"resource": "6639de2c29e8fd28a2db1548", "actions": ["update:any", "read:any", "delete:any"], "attributes": "*" }]
+ *          example: [{"resource": "6639de2c29e8fd28a2db1548", "actions": [":any", "update:any", "read:any", "delete:any"], "attributes": "*" }, {"resource": "6639de2c29e8fd28a2db1548", "actions": ["update:any", "update:any", "read:any", "delete:any"], "attributes": "*" }]
  *   responses:
  *    '200':
  *      description: OK

@@ -6,6 +6,7 @@ const {
   authorizationMiddleware,
   authenticationMiddleware,
 } = require("../middlewares/auth.middleware");
+const { grantAccess } = require("../middlewares/rbac.middleware");
 
 const {
   upload: uploadMiddleware,
@@ -136,6 +137,7 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  */
 router.post(
   "/",
+  grantAccess("createAny", "products"),
   uploadMiddleware.array("images", 10),
   ErrorHandler(productController.create)
 );

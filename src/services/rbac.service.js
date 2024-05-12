@@ -19,12 +19,7 @@ const createResource = async ({ name = "profile", description = "" }) => {
   }
 };
 
-const resourceList = async ({
-  userId = 0,
-  limit = 30,
-  offset = 0,
-  search = "",
-}) => {
+const resourceList = async ({ limit = 30, offset = 0, search = "" }) => {
   try {
     // 1. check admin ? middleware
 
@@ -68,15 +63,8 @@ const createRole = async ({ name = "user", description = "", grants = [] }) => {
   }
 };
 
-const roleList = async ({
-  userId = 0,
-  limit = 30,
-  offset = 0,
-  search = "",
-}) => {
+const roleList = async () => {
   try {
-    // 1. userId
-
     // 2. get role list
     const roles = await RoleModel.aggregate([
       {

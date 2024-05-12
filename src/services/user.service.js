@@ -193,7 +193,7 @@ const createUser = async ({
   email,
   password,
 }) => {
-  const mongo = await Database.getInstance();
+  const mongo = Database.getInstance();
   let session = await mongo.startSession();
 
   try {
@@ -269,6 +269,31 @@ const getInvoices = async (req) => {
   });
 };
 
+const updateVerify = async (email) => {
+  try {
+    const user = await userModel.findOneAndUpdate(
+      {
+        email: email,
+      },
+      {
+        verified: true,
+      }
+    );
+
+    return user;
+  } catch (err) {
+    console.log(err);
+  }
+
+  return null;
+};
+
+const findOneAuth = async (email) => {
+  const user = await userModel.findOne({ email }).populate("roles").lean();
+
+  return user;
+};
+
 module.exports = {
   findOneByEmail,
   createUser,
@@ -281,4 +306,6 @@ module.exports = {
   updateAddresses,
   updateProfile,
   getInvoices,
+  updateVerify,
+  findOneAuth,
 };

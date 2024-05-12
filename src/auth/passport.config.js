@@ -1,6 +1,7 @@
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const JwtStrategy = require("passport-jwt").Strategy;
 const { AuthenticationError } = require("../core/error.response");
+const userService = require("../services/user.service");
 
 const {
   jwt: { secretKey },
@@ -14,8 +15,10 @@ const opts = {
 module.exports = (passport) => {
   passport.use(
     "jwt",
-    new JwtStrategy(opts, (jwtPayload, next) => {
-      console.log({ jwtPayload });
+    new JwtStrategy(opts, async (jwtPayload, next) => {
+      const user = await userService.findOneAuth(jwtPayload.email);
+
+      console.log("user", user);
 
       return next(null, jwtPayload);
     })

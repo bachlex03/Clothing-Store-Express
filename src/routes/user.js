@@ -32,7 +32,7 @@ router.use("/", authenticationMiddleware);
  */
 router.get(
   "/checkoutInfo",
-  grantAccess("readAny", "user"),
+  grantAccess("readOwn", "profiles"),
   ErrorHandler(userController.getCheckoutInfo)
 );
 
@@ -51,7 +51,7 @@ router.get(
  */
 router.get(
   "/profile",
-  grantAccess("readOwn", "user"),
+  grantAccess("readOwn", "profiles"),
   ErrorHandler(userController.getProfile)
 );
 
@@ -68,7 +68,12 @@ router.get(
  *             schema:
  *               type: object
  */
-router.get("/addresses", ErrorHandler(userController.getAddress));
+
+router.get(
+  "/addresses",
+  grantAccess("readOwn", "profiles"),
+  ErrorHandler(userController.getAddress)
+);
 
 /**
  * @swagger
@@ -83,7 +88,11 @@ router.get("/addresses", ErrorHandler(userController.getAddress));
  *             schema:
  *               type: object
  */
-router.get("/invoices", ErrorHandler(userController.getInvoices));
+router.get(
+  "/invoices",
+  grantAccess("readOwn", "profiles"),
+  ErrorHandler(userController.getInvoices)
+);
 
 /**
  * @swagger
@@ -117,7 +126,11 @@ router.get("/invoices", ErrorHandler(userController.getInvoices));
  *        schema:
  *         type: object
  */
-router.put("/addresses", ErrorHandler(userController.updateAddresses));
+router.put(
+  "/addresses",
+  grantAccess("updateOwn", "profiles"),
+  ErrorHandler(userController.updateAddresses)
+);
 
 /**
  * @swagger
@@ -146,6 +159,10 @@ router.put("/addresses", ErrorHandler(userController.updateAddresses));
  *        schema:
  *         type: object
  */
-router.put("/profile", ErrorHandler(userController.updateProfile));
+router.put(
+  "/profile",
+  grantAccess("updateOwn", "profiles"),
+  ErrorHandler(userController.updateProfile)
+);
 
 module.exports = router;

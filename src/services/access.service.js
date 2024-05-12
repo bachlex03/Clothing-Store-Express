@@ -17,6 +17,8 @@ const { generateTokenPair, decode, generateMailToken } = require("../auth/jwt");
 const { getValueObj } = require("../utils/getValueObj");
 const { sendEmail, sendResetPassword } = require("../mailer/mailer.service");
 const RedisService = require("./redis.service");
+const userServices = require("../services/user.service");
+const roleModel = require("../models/role.model");
 
 class AccessService {
   // [GET] /verify?q=
@@ -63,12 +65,7 @@ class AccessService {
       name: firstName,
     });
 
-    console.log({
-      email,
-      token,
-    });
-
-    RedisService.set(`${email}:token`, token);
+    await RedisService.set(`${email}:token`, token);
 
     return {
       message: "Sended !",
@@ -77,11 +74,6 @@ class AccessService {
 
   // [POST] /verifyEmail
   async verifyEmail({ q, mailToken }) {
-    console.log({
-      q,
-      mailToken,
-    });
-
     if (!q && !mailToken) {
       throw new BadRequestError("Something went wrong");
     }
@@ -101,10 +93,9 @@ class AccessService {
       throw new BadRequestError("Something went wrong");
     }
 
-    await RedisService.del(`${email}:token`);
-
     const user = await findOneByEmail(email);
-    await user.updateOne({ verified: true });
+
+    await userServices.updateVerify(email);
 
     const payload = {
       firstName: user.firstName,
@@ -200,12 +191,14 @@ class AccessService {
       };
     }
 
+    const roleId = existUser.roles[0];
+
     // 3. generate tokens
     const payload = {
       firstName: existUser.firstName,
       lastName: existUser.lastName,
       email: existUser.email,
-      roles: existUser.roles,
+      roles: ["USER"],
     };
 
     const { accessToken, refreshToken } = generateTokenPair(payload);

@@ -25,14 +25,11 @@ const userSchema = new Schema(
       type: Schema.Types.Boolean,
       default: false,
     },
-    // roles: {
-    //   type: [String],
-    //   default: ["USER"],
-    //   enum: ["USER", "STAFF", "ADMIN"],
-    // },
+
     roles: {
-      type: Schema.Types.ObjectId,
+      type: [Schema.Types.ObjectId],
       ref: "Role",
+      default: ["66404ef12b67f9e4469d647f"],
     },
     user_profile: {
       type: Schema.Types.ObjectId,

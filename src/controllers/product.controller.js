@@ -10,13 +10,13 @@ class ProductController {
     }).send(res);
   }
 
-  // async getAll(req, res) {
-  //   new OK({
-  //     message: "OK",
-  //     statusCode: 200,
-  //     data: await productService.getAll(),
-  //   }).send(res);
-  // }
+  async getAll(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await productService.getAll(),
+    }).send(res);
+  }
 
   async getImages(req, res) {
     new OK({

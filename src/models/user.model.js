@@ -29,7 +29,7 @@ const userSchema = new Schema(
     roles: {
       type: [Schema.Types.ObjectId],
       ref: "Role",
-      default: ["66404ef12b67f9e4469d647f"],
+      default: ["66434d1afd0d76dfa0eee8af"],
     },
     user_profile: {
       type: Schema.Types.ObjectId,

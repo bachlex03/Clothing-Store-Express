@@ -5,7 +5,9 @@ const { roleList } = require("../services/rbac.service");
 const grantAccess = (action, resource) => {
   return async (req, res, next) => {
     try {
-      const role = req.user?.roles[0]?.role_name ?? "USER";
+      console.log("req.user", req.user);
+
+      const role = req?.user?.roles[0]?.role_name ?? "USER";
 
       const roles = await roleList();
 

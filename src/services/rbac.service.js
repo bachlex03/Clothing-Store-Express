@@ -2,6 +2,8 @@
 
 const ResourceModel = require("../models/resource.model");
 const RoleModel = require("../models/role.model");
+const { BadRequestError } = require("../core/error.response");
+const { Schema } = require("mongoose");
 
 const createResource = async ({ name = "profile", description = "" }) => {
   try {
@@ -43,23 +45,39 @@ const resourceList = async ({ limit = 30, offset = 0, search = "" }) => {
   }
 };
 
-const createRole = async ({ name = "user", description = "", grants = [] }) => {
+const createRole = async ({ name, description = "", grants = [] }) => {
+  // 1.
+  if (!name || grants.length === 0) {
+    throw new BadRequestError("Invalid input");
+  }
+
   try {
     // 1. check role is exist
 
-    console.log("grants", typeof grants);
+    const filters = {
+      role_name: name,
+    };
 
-    // 2. create role
-    const role = await RoleModel.create({
+    const opts = {
+      upsert: true,
+      new: true,
+    };
+
+    const update = {
       role_name: name,
       role_description: description,
       role_grants: grants,
-    });
+    };
+
+    // 2. create role
+    const role = await RoleModel.findOneAndUpdate(filters, update, opts);
 
     return role;
   } catch (error) {
-    console.log("error: ", error);
-    return [];
+    console.log("error", error);
+    throw new BadRequestError(
+      "Invalid role name. It must be in ['ADMIN', 'USER']"
+    );
   }
 };
 

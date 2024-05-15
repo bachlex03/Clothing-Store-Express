@@ -1,5 +1,6 @@
 "use strict";
 
+const e = require("express");
 const { model, Schema } = require("mongoose");
 
 const COLLECTION_NAME = "Roles";
@@ -11,6 +12,8 @@ const roleSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+      enum: ["ADMIN", "USER"],
+      unique: true,
     },
     role_description: {
       type: String,

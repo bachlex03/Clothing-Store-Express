@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const ErrorHandler = require("../utils/catchError");
+const { authenticationMiddleware } = require("../middlewares/auth.middleware");
+const { grantAccess } = require("../middlewares/rbac.middleware");
 
 const vnpayController = require("../controllers/vnpay.controller");
 
@@ -10,6 +12,7 @@ const vnpayController = require("../controllers/vnpay.controller");
  *  name: Vnpay
  *  description: third party payment gateway
  */
+router.use("/", authenticationMiddleware);
 
 /**
  * @swagger
@@ -33,7 +36,11 @@ const vnpayController = require("../controllers/vnpay.controller");
  *        schema:
  *         type: object
  */
-router.post("/", ErrorHandler(vnpayController.createPaymentUrl));
+router.post(
+  "/",
+  grantAccess("createOwn", "invoices"),
+  ErrorHandler(vnpayController.createPaymentUrl)
+);
 
 /**
  * @swagger
@@ -48,6 +55,10 @@ router.post("/", ErrorHandler(vnpayController.createPaymentUrl));
  *             schema:
  *               type: object
  */
-router.get("/vnpay_ipn", ErrorHandler(vnpayController.vnpayIpn));
+router.get(
+  "/vnpay_ipn",
+  grantAccess("createOwn", "invoices"),
+  ErrorHandler(vnpayController.vnpayIpn)
+);
 
 module.exports = router;

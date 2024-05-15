@@ -3,6 +3,7 @@
 const { AuthenticationError } = require("../core/error.response");
 const passport = require("passport");
 const AccessControl = require("accesscontrol");
+const userServices = require("../services/user.service");
 
 const rbac = new AccessControl();
 
@@ -29,11 +30,11 @@ const authorizationMiddleware = (roles = []) => {
 };
 
 const authenticationMiddleware = (req, res, next) => {
-  passport.authenticate("jwt", { session: false }, (err, user, info) => {
+  passport.authenticate("jwt", { session: false }, async (err, user, info) => {
     if (err || !user || Object.keys(user).length === 0) {
       return next(new AuthenticationError("Unauthorized"));
     } else {
-      req.user = user; // Set user in request object
+      req.user = user;
       return next();
     }
   })(req, res, next);

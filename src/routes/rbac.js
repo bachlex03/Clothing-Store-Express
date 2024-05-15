@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const ErrorHandler = require("../utils/catchError");
+const { authenticationMiddleware } = require("../middlewares/auth.middleware");
+const { grantAccess } = require("../middlewares/rbac.middleware");
 
 const rbacController = require("../controllers/rbac.controller");
 /**
@@ -9,6 +11,7 @@ const rbacController = require("../controllers/rbac.controller");
  *  name: RBAC
  *  description:
  */
+router.use("/", authenticationMiddleware);
 
 /**
  * @swagger
@@ -33,7 +36,7 @@ const rbacController = require("../controllers/rbac.controller");
  *          example: true
  *         grants:
  *          type: array
- *          example: [{"resource": "6639de2c29e8fd28a2db1548", "actions": [":any", "update:any", "read:any", "delete:any"], "attributes": "*" }, {"resource": "6639de2c29e8fd28a2db1548", "actions": ["update:any", "update:any", "read:any", "delete:any"], "attributes": "*" }]
+ *          example: [{"resource": "6639de2c29e8fd28a2db1548", "actions": ["create:any", "update:any", "read:any", "delete:any"], "attributes": "*" }, {"resource": "6639de2c29e8fd28a2db1548", "actions": ["create:any", "update:any", "read:any", "delete:any"], "attributes": "*" }]
  *   responses:
  *    '200':
  *      description: OK
@@ -42,7 +45,11 @@ const rbacController = require("../controllers/rbac.controller");
  *        schema:
  *         type: object
  */
-router.post("/role", ErrorHandler(rbacController.newRole));
+router.post(
+  "/role",
+  //   grantAccess("createAny", "rbac"),
+  ErrorHandler(rbacController.newRole)
+);
 
 /**
  * @swagger
@@ -57,7 +64,11 @@ router.post("/role", ErrorHandler(rbacController.newRole));
  *             schema:
  *               type: object
  */
-router.get("/roles", ErrorHandler(rbacController.listRoles));
+router.get(
+  "/roles",
+  grantAccess("readAny", "rbac"),
+  ErrorHandler(rbacController.listRoles)
+);
 
 /**
  * @swagger
@@ -85,7 +96,11 @@ router.get("/roles", ErrorHandler(rbacController.listRoles));
  *        schema:
  *         type: object
  */
-router.post("/resource", ErrorHandler(rbacController.newResource));
+router.post(
+  "/resource",
+  //   grantAccess("createAny", "rbac"),
+  ErrorHandler(rbacController.newResource)
+);
 
 /**
  * @swagger
@@ -100,6 +115,10 @@ router.post("/resource", ErrorHandler(rbacController.newResource));
  *             schema:
  *               type: object
  */
-router.get("/resources", ErrorHandler(rbacController.listResources));
+router.get(
+  "/resources",
+  grantAccess("readAny", "rbac"),
+  ErrorHandler(rbacController.listResources)
+);
 
 module.exports = router;

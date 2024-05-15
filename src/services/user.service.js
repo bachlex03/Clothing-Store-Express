@@ -86,10 +86,15 @@ const getProfile = async (req) => {
     throw new BadRequestError("User not found");
   }
 
-  return getValueObj({
+  const data = getValueObj({
     obj: user.user_profile,
     fields: ["profile_firstName", "profile_lastName", "profile_phoneNumber"],
   });
+
+  return {
+    email,
+    ...data,
+  };
 };
 
 const getAddress = async (req) => {
@@ -122,7 +127,7 @@ const getAddress = async (req) => {
 };
 
 const updateAddresses = async (req) => {
-  const { addressLine, city, province, country } = req.body;
+  const { addressLine, district, province, country } = req.body;
 
   const { email } = req.user;
 
@@ -136,10 +141,10 @@ const updateAddresses = async (req) => {
   });
 
   const newAddress = {
-    address_addressLine: addressLine,
-    address_city: city,
-    address_province: province,
     address_country: country,
+    address_province: province,
+    address_district: district,
+    address_addressLine: addressLine,
   };
 
   const address = user.user_profile.profile_address;
@@ -151,10 +156,10 @@ const updateAddresses = async (req) => {
   return getValueObj({
     obj: address,
     fields: [
-      "address_addressLine",
-      "address_city",
-      "address_province",
       "address_country",
+      "address_province",
+      "address_district",
+      "address_addressLine",
     ],
   });
 };

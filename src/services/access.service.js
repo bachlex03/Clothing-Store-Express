@@ -101,7 +101,6 @@ class AccessService {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      roles: user.roles,
     };
 
     const { accessToken, refreshToken } = generateTokenPair(payload);
@@ -198,7 +197,6 @@ class AccessService {
       firstName: existUser.firstName,
       lastName: existUser.lastName,
       email: existUser.email,
-      roles: ["USER"],
     };
 
     const { accessToken, refreshToken } = generateTokenPair(payload);

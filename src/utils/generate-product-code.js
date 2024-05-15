@@ -6,14 +6,27 @@ const Brands = {
   versace: "VS",
   "louis vuitton": "LV",
 };
-// 'Outerwear', 'Dresses', 'T-Shirts', 'Blouses', 'Knitwear', 'Pant'
+
+//, Earring, Handbags, Shawl, Tunic, Jackets, Blazers
+//, Trousers, Jeans, Palazzos, Maxi, Cocktail, Sun Hats
+//, Dressy Blouses, Winter Coats,  Rain Jackets, Short Sleeve
 const Categories = {
-  outerwear: "OW",
-  dresses: "DRE",
-  "t-shirts": "TS",
-  blouses: "BL",
-  knitwear: "KW",
-  pant: "PT",
+  earring: "EA",
+  handbags: "HB",
+  shawl: "SL",
+  tunic: "TC",
+  jackets: "JT",
+  blazers: "BZ",
+  trousers: "TS",
+  jeans: "JN",
+  palazzos: "PZ",
+  maxi: "MA",
+  cocktail: "CO",
+  "sun hats": "SH",
+  "dressy blouses": "DB",
+  "winter coats": "WC",
+  "rain jackets": "RJ",
+  "short sleeve": "SS",
 };
 
 const Gender = {
@@ -27,17 +40,9 @@ const generateProductCode = ({ brand = "", category = "", gender = "" }) => {
   category = category.toLowerCase();
   gender = gender.toLowerCase();
 
-  console.log("category", category);
-
   brand = Brands[brand] ? Brands[brand] : "00";
   category = Categories[category] ? Categories[category] : "00";
   gender = Gender[gender] ? Gender[gender] : "0";
-
-  console.log({
-    brand,
-    category,
-    gender,
-  });
 
   const uniqueIdentifier = Date.now().toString().substring(1, 10);
 

@@ -32,7 +32,7 @@ router.use("/", authenticationMiddleware);
  */
 router.get(
   "/checkoutInfo",
-  grantAccess("readOwn", "profiles"),
+  grantAccess("readOwn", "users"),
   ErrorHandler(userController.getCheckoutInfo)
 );
 
@@ -51,7 +51,7 @@ router.get(
  */
 router.get(
   "/profile",
-  grantAccess("readOwn", "profiles"),
+  grantAccess("readOwn", "users"),
   ErrorHandler(userController.getProfile)
 );
 
@@ -71,7 +71,7 @@ router.get(
 
 router.get(
   "/addresses",
-  grantAccess("readOwn", "profiles"),
+  grantAccess("readOwn", "users"),
   ErrorHandler(userController.getAddress)
 );
 
@@ -90,7 +90,7 @@ router.get(
  */
 router.get(
   "/invoices",
-  grantAccess("readOwn", "profiles"),
+  grantAccess("readOwn", "users"),
   ErrorHandler(userController.getInvoices)
 );
 
@@ -109,12 +109,12 @@ router.get(
  *         addressLine:
  *          type: string
  *          example: "106* Kha Van Can, Linh Dong, Thu Duc"
- *         city:
- *          type: string
- *          example: "Thu Duc"
  *         province:
  *          type: string
- *          example: "Ho Chi Minh"
+ *          example: "Hồ Chí Minh"
+ *         district:
+ *          type: string
+ *          example: "Quận 1"
  *         country:
  *          type: string
  *          example: "Vietnam"
@@ -128,7 +128,7 @@ router.get(
  */
 router.put(
   "/addresses",
-  grantAccess("updateOwn", "profiles"),
+  grantAccess("updateOwn", "users"),
   ErrorHandler(userController.updateAddresses)
 );
 
@@ -161,7 +161,7 @@ router.put(
  */
 router.put(
   "/profile",
-  grantAccess("updateOwn", "profiles"),
+  grantAccess("updateOwn", "users"),
   ErrorHandler(userController.updateProfile)
 );
 

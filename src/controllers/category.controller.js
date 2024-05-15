@@ -18,11 +18,11 @@ class CategoryController {
     }).send(res);
   }
 
-  async getAllChildren(req, res) {
+  async withChildren(req, res) {
     new CREATED({
       message: "OK",
       statusCode: 200,
-      data: await categoryService.getAllChildren(),
+      data: await categoryService.withChildren(),
     }).send(res);
   }
 }

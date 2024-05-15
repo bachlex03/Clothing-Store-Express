@@ -30,6 +30,8 @@ const create = async (req) => {
     status = "Draft",
   } = req.body;
 
+  console.log("req.body", req.body);
+
   images = req.files;
 
   // Check if product name is empty
@@ -79,7 +81,9 @@ const create = async (req) => {
 
   let saveImages = [];
 
-  if (images.length) {
+  console.log("images", images);
+
+  if (images) {
     for (let i = 0; i < images.length; i++) {
       const result = await cloundinaryService.uploadImage(images[i].path);
 
@@ -131,34 +135,32 @@ const create = async (req) => {
       });
 
       await session.commitTransaction();
+      session.endSession();
+
+      return product;
     } catch (err) {
       await session.abortTransaction();
-
       session.endSession();
 
       saveImages.forEach(async (image) => {
         const response = await cloundinaryService.deleteImage(image.public_id);
       });
 
-      return;
+      throw new BadRequestError(err.message);
     }
   });
 
-  return products;
+  return Promise.all(products);
 };
 
-// // [GET] /api/v1/products
-// const getAll = async () => {
-//   const products = await productModel.find();
+// [GET] /api/v1/products
+const getAll = async () => {
+  const products = await productModel.find().populate("product_category");
 
-//   console.log("products", products);
+  console.log("products", products);
 
-//   if (!products) {
-//     throw new NotFoundError("Products not found");
-//   }
-
-//   return products;
-// };
+  return products;
+};
 
 // [GET] /api/v1/products/:slug
 const getBySlug = async (params) => {
@@ -275,7 +277,7 @@ const getByQueryParam = async (query) => {
 
 module.exports = {
   create,
-  // getAll,
+  getAll,
   getBySlug,
   getImages,
   getByQueryParam,

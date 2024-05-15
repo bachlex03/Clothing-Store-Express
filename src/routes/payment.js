@@ -5,6 +5,7 @@ const {
   authorizationMiddleware,
   authenticationMiddleware,
 } = require("../middlewares/auth.middleware");
+const { grantAccess } = require("../middlewares/rbac.middleware");
 
 const paymentController = require("../controllers/paymentController");
 
@@ -62,10 +63,17 @@ router.use("/", authenticationMiddleware);
  *        schema:
  *         type: object
  */
-router.use(authorizationMiddleware(["USER", "ADMIN"]));
-router.post("/", ErrorHandler(paymentController.payInvoice));
+router.post(
+  "/",
+  grantAccess("createOwn", "invoices"),
+  ErrorHandler(paymentController.payInvoice)
+);
 
-router.get("/:id", ErrorHandler(paymentController.viewDetails));
+router.get(
+  "/:id",
+  grantAccess("readOwn", "invoices"),
+  ErrorHandler(paymentController.viewDetails)
+);
 
 /**
  * @swagger
@@ -108,6 +116,7 @@ router.get("/:id", ErrorHandler(paymentController.viewDetails));
  */
 router.post(
   "/updateAddresses",
+  grantAccess("updateOwn", "invoices"),
   ErrorHandler(paymentController.updateAddresses)
 );
 

@@ -23,6 +23,21 @@ const productController = require("../controllers/product.controller");
 
 /**
  * @swagger
+ * /api/v1/products:
+ *   get:
+ *     tags: [Products]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/", ErrorHandler(productController.getAll));
+
+/**
+ * @swagger
  * /api/v1/products?q={q}:
  *   get:
  *     tags: [Products]
@@ -41,21 +56,6 @@ const productController = require("../controllers/product.controller");
  *               type: object
  */
 router.get("/", ErrorHandler(productController.getByQueryParam));
-
-// /**
-//  * @swagger
-//  * /api/v1/products:
-//  *   get:
-//  *     tags: [Products]
-//  *     responses:
-//  *       '200':
-//  *         description: OK
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  */
-// router.get("/", ErrorHandler(productController.getAll));
 
 /**
  * @swagger
@@ -78,6 +78,28 @@ router.get("/", ErrorHandler(productController.getByQueryParam));
  *               type: object
  */
 router.get("/:slug", ErrorHandler(productController.getBySlug));
+
+/**
+ * @swagger
+ * /api/v1/products/{slug}/images:
+ *   get:
+ *     tags: [Products]
+ *     parameters:
+ *       - name: slug
+ *         in: path
+ *         required: true
+ *         description: The slug of the product
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/:slug/images", ErrorHandler(productController.getImages));
 
 // router.use("/", authenticationMiddleware);
 // router.use(authorizationMiddleware(["ADMIN"]));
@@ -105,13 +127,13 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  *          default: "Clothe"
  *         brand:
  *          type: string
- *          default: "louis vuitton"
+ *          default: "Louis Vuitton"
  *         categoryId:
  *          type: string
- *          default: "66138a1018286bb5eafa3567"
+ *          default: "664359e535e84033bbd0e6f9"
  *         category:
  *          type: string
- *          default: "Outerwear"
+ *          default: "Cocktail"
  *         sizes:
  *          type: array
  *          example: ["S"]
@@ -135,34 +157,14 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  *        schema:
  *         type: object
  */
+router.use("/", authenticationMiddleware);
+
 router.post(
   "/",
   grantAccess("createAny", "products"),
   uploadMiddleware.array("images", 10),
   ErrorHandler(productController.create)
 );
-
-/**
- * @swagger
- * /api/v1/products/{slug}/images:
- *   get:
- *     tags: [Products]
- *     parameters:
- *       - name: slug
- *         in: path
- *         required: true
- *         description: The slug of the product
- *         schema:
- *           type: string
- *     responses:
- *       '200':
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get("/:slug/images", ErrorHandler(productController.getImages));
 
 // router.put("/", ErrorHandler(productController.create));
 

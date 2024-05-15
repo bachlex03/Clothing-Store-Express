@@ -7,7 +7,7 @@ const addressSchema = new Schema(
   {
     address_country: {
       type: String,
-      default: "",
+      default: "Việt Nam",
       trim: true,
     },
     address_province: {
@@ -15,7 +15,7 @@ const addressSchema = new Schema(
       default: "",
       trim: true,
     },
-    address_city: {
+    address_district: {
       type: String,
       default: "",
       trim: true,

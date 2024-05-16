@@ -68,6 +68,9 @@ const payInvoice = async (req) => {
     const { totalPrice: verifyTotal, processedProducts } =
       await checkTotalPriceAndAttackId(boughtItems);
 
+    console.log("verifyTotal", verifyTotal);
+    console.log("totalPrice", totalPrice);
+
     boughtItemsAttackedId = processedProducts;
 
     if (totalPrice !== verifyTotal * 25000) {
@@ -217,7 +220,7 @@ const checkTotalPriceAndAttackId = async (boughtItems) => {
   );
 
   const totalPrice = boughtItemsAttackedId.reduce((acc, curr) => {
-    return acc + curr.product_price;
+    return acc + curr.product_price * curr.product_quantity;
   }, 0);
 
   return {

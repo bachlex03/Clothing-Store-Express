@@ -396,13 +396,15 @@ const changeCurrentPassword = async (req) => {
     throw new BadRequestError("Password not match");
   }
 
+  const hashPassword = await bcrypt.hash(confirmPassword, 10);
+
   try {
     const user = await userModel.findOneAndUpdate(
       {
         email: email,
       },
       {
-        password: confirmPassword,
+        password: hashPassword,
       }
     );
 

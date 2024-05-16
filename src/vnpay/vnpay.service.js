@@ -27,7 +27,7 @@ const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
   const LOCALE = "vn";
   const CURR_CODE = "VND";
   const ORDER_TYPE = "200000";
-  const RETURN_URL = "http://localhost:3000/shop";
+  const RETURN_URL = "http://localhost:3001/api/v1/vnpay/vnpay_ipn";
 
   const vnp_Params = {};
 
@@ -59,8 +59,10 @@ const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
 
     invoice.setStatus("paid");
 
+    console.log("invoice", invoice);
+
     await invoiceService.create({
-      user_id: invoice.user_id,
+      user_id: invoice.user,
       status: invoice.status,
       total: invoice.total,
       boughtProducts: invoice.products,
@@ -77,6 +79,8 @@ const vnpayIpn = async (req) => {
   const secureHash = req.query.vnp_SecureHash;
   const secureHashType = req.query.vnp_SecureHashType;
   const vnp_Params = req.query;
+
+  console.log("req.query", req.query);
 
   delete vnp_Params.vnp_SecureHash;
   delete vnp_Params.vnp_SecureHashType;

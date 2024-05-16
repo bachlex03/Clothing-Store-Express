@@ -47,6 +47,10 @@ router.post(
  * /api/v1/vnpay/vnpay_ipn:
  *   get:
  *     tags: [Vnpay]
+ *     parameters:
+ *       - in: query
+ *         schema:
+ *           type: string
  *     responses:
  *       '200':
  *         description: OK
@@ -55,10 +59,6 @@ router.post(
  *             schema:
  *               type: object
  */
-router.get(
-  "/vnpay_ipn",
-  grantAccess("createOwn", "invoices"),
-  ErrorHandler(vnpayController.vnpayIpn)
-);
+router.get("/vnpay_ipn", ErrorHandler(vnpayController.vnpayIpn));
 
 module.exports = router;

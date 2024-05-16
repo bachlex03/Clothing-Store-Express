@@ -152,6 +152,19 @@ const create = async (req) => {
   return Promise.all(products);
 };
 
+// [DELETE] /api/v1/products/:id
+const remove = async (id) => {
+  if (!id) throw new BadRequestError("Product id is required");
+
+  const product = await productModel.findByIdAndDelete(id);
+
+  if (!product) {
+    throw new NotFoundError("Can't delete this product");
+  }
+
+  return !!product;
+};
+
 // [GET] /api/v1/products
 const getAll = async () => {
   const products = await productModel.find().populate("product_category");
@@ -240,6 +253,7 @@ const getByQueryParam = async (query) => {
           "product_sizes",
           "product_colors",
           "product_type",
+          "_id",
         ],
       });
 
@@ -398,6 +412,7 @@ module.exports = {
   getBySlug,
   getImages,
   getByQueryParam,
+  remove,
 };
 
 // images = imagesUpload.map((image) => {

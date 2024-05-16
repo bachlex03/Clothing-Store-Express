@@ -22,17 +22,17 @@ const DEFAULT_STATUS = "Draft";
 // [POST] /api/v1/products
 const create = async (req) => {
   let {
-    name = "",
-    description = "",
+    name,
+    description,
     sizes = [],
-    color = "",
-    type = "",
-    gender = "",
-    brand = "",
+    color,
+    type,
+    gender,
+    brand,
     categoryId = null,
-    category = "",
-    price = 0,
-    quantity = 0,
+    category,
+    price,
+    quantity,
     images = [],
     status = "Draft",
   } = req.body;
@@ -61,14 +61,16 @@ const create = async (req) => {
     .setGender(gender)
     .setImages(images);
 
-  const isValid = validateInfo(product);
-
-  if (!isValid) {
-    throw new BadRequestError("Something went wrong when create product!");
+  // Validate fields
+  try {
+    validateInfo(product);
+  } catch (err) {
+    throw new BadRequestError(err.message);
   }
 
   let saveImages = [];
 
+  // Upload images to cloundinary
   if (product.images) {
     for (let i = 0; i < product.images.length; i++) {
       const result = await cloundinaryService.uploadImage(
@@ -81,7 +83,9 @@ const create = async (req) => {
     }
   }
 
+  // Start transaction
   const mongo = Database.getInstance();
+  let session = await mongo.startSession();
 
   const products = product.sizes.map(async (size, index) => {
     const update = {
@@ -112,8 +116,6 @@ const create = async (req) => {
       upsert: true,
       new: true,
     };
-
-    let session = await mongo.startSession();
 
     try {
       session.startTransaction();
@@ -267,11 +269,11 @@ const getByQueryParam = async (query) => {
     return "testing...";
   }
 
-  if (!products) {
+  if (!results) {
     throw new NotFoundError("Products not found");
   }
 
-  return products;
+  return results;
 };
 
 const validateInfo = (product = Product) => {
@@ -281,13 +283,47 @@ const validateInfo = (product = Product) => {
     throw new BadRequestError("Product name is required");
   }
 
+  // Check if product description is empty
+  if (!product.description) {
+    throw new BadRequestError("Product description is required");
+  }
+
+  // Check if product quantity is empty
+  if (!product.price) {
+    throw new BadRequestError("Product price is required");
+  }
+
+  try {
+    product.price = parseInt(product.price);
+  } catch (err) {
+    throw new BadRequestError("Price must be a number");
+  }
+
+  console.log("product.price", product.price);
+
+  // Check if product quantity is empty
+  if (!(product.price > 0)) {
+    throw new BadRequestError("Price must be greater than 0");
+  }
+
+  // Check if product type is empty
+  if (!product.type) {
+    throw new BadRequestError("Product type is required");
+  }
+
+  // Check if product category is empty
+  if (!product.category) {
+    throw new BadRequestError("Product category is required");
+  }
+
   // Check if colors is empty or not in colorsEnum
   if (!product.sizes.length > 0) {
-    throw new BadRequestError("Size is required");
-  } else {
-    if (typeof product.sizes === "string") {
-      product.sizes = product.sizes.split(",");
-    }
+    throw new BadRequestError("Product size is required");
+  }
+
+  // Check if sizes not in sizesEnum
+  if (typeof product.sizes === "string") {
+    product.sizes = product.sizes.split(",");
 
     product.sizes.forEach((size) => {
       if (!sizesEnum.includes(size)) {
@@ -297,24 +333,61 @@ const validateInfo = (product = Product) => {
   }
 
   // Check if color is empty or not in sizesEnum
-  if (!product.color || !colorsEnum.includes(product.color)) {
+  if (!product.color) {
+    throw new BadRequestError("Product color is required");
+  }
+
+  // Check if color not in colorsEnum
+  if (!colorsEnum.includes(product.color)) {
     throw new BadRequestError("Invalid color value");
   }
 
+  // Check if product quantity is empty
+  if (!product.quantity) {
+    throw new BadRequestError("Product quantity is required");
+  }
+
+  try {
+    product.quantity = parseInt(product.quantity);
+  } catch (err) {
+    throw new BadRequestError("Quantity must be a number");
+  }
+
+  console.log("product.quantity", product.quantity);
   // Check if product quantity is less than 0
-  if (product.quantity < 0) {
+  if (!(product.quantity > 0)) {
     throw new BadRequestError("quantity must be greater than 0");
   }
 
-  // Check status value
-  if (!statusEnum.includes(product.status)) {
-    product.status = DEFAULT_STATUS;
+  // Check if product status is empty
+  if (!product.status) {
+    throw new BadRequestError("Product status is required");
   }
 
-  // Check status value
-  if (!genderArr.includes(product.gender)) {
-    product.gender = GenderEnum.UNISEX;
+  // Check if product status is empty
+  if (!product.gender) {
+    throw new BadRequestError("Product gender is required");
   }
+
+  // Check if product status is empty
+  if (!product.images) {
+    throw new BadRequestError("Product images is required");
+  }
+
+  // Check if product status is empty
+  if (!product.images.length > 0) {
+    throw new BadRequestError("Product images is required");
+  }
+
+  // // Check status value
+  // if (!statusEnum.includes(product.status)) {
+  //   product.status = DEFAULT_STATUS;
+  // }
+
+  // // Check status value
+  // if (!genderArr.includes(product.gender)) {
+  //   product.gender = GenderEnum.UNISEX;
+  // }
 
   return true;
 };

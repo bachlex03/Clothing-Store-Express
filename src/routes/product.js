@@ -23,21 +23,6 @@ const productController = require("../controllers/product.controller");
 
 /**
  * @swagger
- * /api/v1/products:
- *   get:
- *     tags: [Products]
- *     responses:
- *       '200':
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get("/", ErrorHandler(productController.getAll));
-
-/**
- * @swagger
  * /api/v1/products?q={q}:
  *   get:
  *     tags: [Products]
@@ -56,6 +41,21 @@ router.get("/", ErrorHandler(productController.getAll));
  *               type: object
  */
 router.get("/", ErrorHandler(productController.getByQueryParam));
+
+/**
+ * @swagger
+ * /api/v1/products:
+ *   get:
+ *     tags: [Products]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get("/", ErrorHandler(productController.getAll));
 
 /**
  * @swagger
@@ -166,6 +166,30 @@ router.post(
   ErrorHandler(productController.create)
 );
 
-// router.put("/", ErrorHandler(productController.create));
+/**
+ * @swagger
+ * /api/v1/products/{id}:
+ *   delete:
+ *     tags: [Products]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the product
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.delete(
+  "/:id",
+  grantAccess("deleteAny", "products"),
+  ErrorHandler(productController.getBySlug)
+);
 
 module.exports = router;

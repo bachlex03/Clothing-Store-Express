@@ -59,13 +59,13 @@ router.get(
  *          example: "0123456789"
  *         district:
  *          type: string
- *          example: "Thu Duc"
+ *          example: "Thủ Đức"
  *         province:
  *          type: string
- *          example: "Ho Chi Minh"
+ *          example: "Hồ Chí Minh"
  *         country:
  *          type: string
- *          example: "Vietnam"
+ *          example: "Việt Nam"
  *         addressLine:
  *          type: string
  *          example: "106* Kha Van Can, Linh Dong, Thu Duc"

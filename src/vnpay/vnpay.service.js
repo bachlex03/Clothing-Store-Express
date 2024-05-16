@@ -22,6 +22,10 @@ const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
   const { default: dateFormat } = await import("dateformat");
 
   const createDate = dateFormat(date, "yyyymmddHHmmss");
+  const expDate = parseInt(dateFormat(date, "yyyymmddHHmmss")) + 100000;
+
+  console.log("createDate", createDate);
+  console.log("expDate", expDate);
 
   const ORDER_ID = dateFormat(date, "HHmmss");
   const LOCALE = "vn";
@@ -35,7 +39,7 @@ const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
   vnp_Params["vnp_Command"] = "pay";
   vnp_Params["vnp_CreateDate"] = createDate;
   vnp_Params["vnp_CurrCode"] = CURR_CODE;
-  // vnp_Params["vnp_ExpireDate"] = expireDate;
+  vnp_Params["vnp_ExpireDate"] = expDate.toString();
   vnp_Params["vnp_IpAddr"] = "13.160.92.202";
   vnp_Params["vnp_Locale"] = LOCALE;
   vnp_Params["vnp_OrderInfo"] = "Thanh toan don hang";
@@ -78,9 +82,10 @@ const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
 const vnpayIpn = async (req) => {
   const secureHash = req.query.vnp_SecureHash;
   const secureHashType = req.query.vnp_SecureHashType;
+  const responseCode = req.query.vnp_ResponseCode;
   const vnp_Params = req.query;
 
-  console.log("req.query", req.query);
+  // console.log("req.query", req.query);
 
   delete vnp_Params.vnp_SecureHash;
   delete vnp_Params.vnp_SecureHashType;
@@ -92,7 +97,7 @@ const vnpayIpn = async (req) => {
 
   let data;
 
-  if (secureHash === signed) {
+  if (secureHash === signed && responseCode === "00") {
     data = {
       RspCode: "00",
       message: "Payment success",
@@ -113,6 +118,8 @@ const vnpayIpn = async (req) => {
 
 const vnpayReturn = async (req) => {
   var vnp_Params = req.query;
+
+  console.log("vnp_Params", vnp_Params);
 
   var secureHash = vnp_Params["vnp_SecureHash"];
 

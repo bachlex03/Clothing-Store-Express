@@ -8,7 +8,7 @@ module.exports = class Product {
   code;
   gender;
   color;
-  sizes;
+  sizes = [];
   images;
   status;
 

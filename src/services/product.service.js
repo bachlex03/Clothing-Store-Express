@@ -59,6 +59,7 @@ const create = async (req) => {
     .setCategory(categoryId)
     .setType(type)
     .setGender(gender)
+    .setBrand(brand)
     .setImages(images);
 
   // Validate fields
@@ -322,6 +323,11 @@ const validateInfo = (product = Product) => {
 
   // Check if product type is empty
   if (!product.type) {
+    throw new BadRequestError("Product type is required");
+  }
+
+  // Check if product type is empty
+  if (!product.brand) {
     throw new BadRequestError("Product type is required");
   }
 

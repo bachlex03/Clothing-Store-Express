@@ -31,7 +31,7 @@ const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
   const LOCALE = "vn";
   const CURR_CODE = "VND";
   const ORDER_TYPE = "200000";
-  const RETURN_URL = "http://localhost:3001/api/v1/vnpay/vnpay_ipn";
+  const RETURN_URL = "http://localhost:3000/cart";
 
   const vnp_Params = {};
 

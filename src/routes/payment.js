@@ -77,4 +77,10 @@ router.get(
   ErrorHandler(paymentController.viewDetails)
 );
 
+router.post(
+  "/cash",
+  grantAccess("createOwn", "invoices"),
+  ErrorHandler(paymentController.payInvoiceCash)
+);
+
 module.exports = router;

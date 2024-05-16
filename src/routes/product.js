@@ -189,7 +189,7 @@ router.post(
 router.delete(
   "/:id",
   grantAccess("deleteAny", "products"),
-  ErrorHandler(productController.getBySlug)
+  ErrorHandler(productController.remove)
 );
 
 module.exports = router;

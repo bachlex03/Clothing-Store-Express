@@ -10,11 +10,11 @@ class ProductController {
     }).send(res);
   }
 
-  async delete(req, res) {
+  async remove(req, res) {
     new OK({
-      message: "Create successfully",
-      statusCode: 201,
-      data: await productService.create(req),
+      message: "Remove successfully",
+      statusCode: 200,
+      data: await productService.remove(req.params.id),
     }).send(res);
   }
 

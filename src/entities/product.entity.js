@@ -5,6 +5,7 @@ module.exports = class Product {
   price;
   category;
   type;
+  brand;
   code;
   gender;
   color;
@@ -46,6 +47,12 @@ module.exports = class Product {
 
   setType(value) {
     this.type = value;
+
+    return this;
+  }
+
+  setBrand(value) {
+    this.brand = value;
 
     return this;
   }

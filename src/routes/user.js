@@ -50,8 +50,10 @@ router.get(
  *        properties:
  *         firstName:
  *          type: string
+ *          example: "user"
  *         lastName:
  *          type: string
+ *          example: "user"
  *         phoneNumber:
  *          type: string
  *          example: "0123456789"

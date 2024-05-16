@@ -8,7 +8,7 @@ const {
 } = require("../config/config.env");
 const { BadRequestError } = require("../core/error.response");
 
-const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
+const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
   try {
     amount = parseInt(amount).toString();
   } catch (err) {
@@ -22,8 +22,6 @@ const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
   const { default: dateFormat } = await import("dateformat");
 
   const createDate = dateFormat(date, "yyyymmddHHmmss");
-  const currTime = dateFormat(new Date(date.getTime()), "yyyymmddHHmmss");
-  const expireDate = parseInt(currTime) + 15000;
 
   const ORDER_ID = dateFormat(date, "HHmmss");
   const LOCALE = "vn";
@@ -48,7 +46,6 @@ const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
   vnp_Params["vnp_Version"] = "2.1.0";
   //   vnp_Params["vnp_BankCode"] = "NCB"; // Optional - Ngân hàng thanh toán
 
-  // Hash data
   const signData = new URLSearchParams(vnp_Params).toString();
   const hmac = crypto.createHmac("sha512", hashSecret);
   var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
@@ -60,13 +57,14 @@ const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
   global._paymentEvent.on("payment-success", async (data) => {
     await inventoryService.reduceQuantity(boughtItems);
 
-    invoiceInfo.invoice_status = "paid";
+    invoice.setStatus("paid");
 
     await invoiceService.create({
-      userEmail: invoiceInfo.invoice_user,
-      status: invoiceInfo.invoice_status,
-      total: invoiceInfo.invoice_total,
-      boughtProducts: invoiceInfo.invoice_products,
+      user_id: invoice.user_id,
+      status: invoice.status,
+      total: invoice.total,
+      boughtProducts: invoice.products,
+      note: invoice.note,
     });
 
     return data;

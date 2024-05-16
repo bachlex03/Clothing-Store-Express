@@ -8,6 +8,7 @@ const userService = require("./user.service.js");
 const vnpayService = require("../vnpay/vnpay.service.js");
 const inventoryService = require("./inventory.service.js");
 const productService = require("./product.service.js");
+const Invoice = require("../entities/invoice.entity.js");
 
 const payInvoice = async (req) => {
   const {
@@ -21,9 +22,9 @@ const payInvoice = async (req) => {
     note = "",
   } = req.body;
 
-  let { boughtItems = [], totalPrice } = req.body;
-
   const { email } = req.user;
+
+  let { boughtItems = [], totalPrice } = req.body;
 
   const info = {
     firstName,
@@ -35,22 +36,32 @@ const payInvoice = async (req) => {
     addressLine,
   };
 
+  // Validate bought items
   if (boughtItems.length === 0) {
     throw new BadRequestError("No items available");
   }
 
   try {
-    totalPrice = parseInt(totalPrice) * 24000;
+    totalPrice = parseInt(totalPrice) * 25000;
   } catch (error) {
     throw new BadRequestError("Invalid total price");
   }
 
-  try {
-    await checkInvoiceInfo(req, { ...info });
-  } catch (error) {
-    throw new BadRequestError(error);
+  // check user
+  const user = await userService.findOneByEmail(email);
+
+  if (!user) {
+    throw new AuthenticationError("User not found");
   }
 
+  // Validate checkout information
+  const isInfoValid = await checkInvoiceInfo(email, info);
+
+  if (!isInfoValid) {
+    throw new BadRequestError("Invalid checkout information");
+  }
+
+  // Validate price and attack id to bought items
   let boughtItemsAttackedId = [];
 
   try {
@@ -59,26 +70,32 @@ const payInvoice = async (req) => {
 
     boughtItemsAttackedId = processedProducts;
 
-    if (totalPrice !== verifyTotal * 24000) {
+    if (totalPrice !== verifyTotal * 25000) {
       throw new BadRequestError("Total price does not match");
     }
   } catch (error) {
     throw new BadRequestError(error);
   }
 
-  const invoiceInfo = {
-    invoice_user: email || "",
-    invoice_products: boughtItemsAttackedId,
-    invoice_note: note,
-    invoice_status: "unpaid",
-    invoice_total: totalPrice,
-  };
+  // Create invoice
+  const invoice = new Invoice();
+
+  invoice
+    .setUser(user._id)
+    .setProducts(boughtItemsAttackedId)
+    .setNote(note)
+    .setStatus("unpaid")
+    .setTotal(totalPrice);
+
+  console.log("invoice", invoice.getInstance());
+
+  console.log("invoice", invoice.user);
 
   // 2. Process to payment
   const vnpayUrl = await vnpayService.createPaymentUrl(
     totalPrice,
     boughtItemsAttackedId,
-    invoiceInfo
+    invoice
   );
 
   return {
@@ -86,7 +103,7 @@ const payInvoice = async (req) => {
   };
 };
 
-const checkInvoiceInfo = async (req, info) => {
+const checkInvoiceInfo = async (email, info) => {
   // 1. Check if all fields are provided
 
   const {
@@ -99,10 +116,8 @@ const checkInvoiceInfo = async (req, info) => {
     addressLine = "",
   } = info;
 
-  const { email } = req.user;
-
   if (!email) {
-    throw new AuthenticationError("User not found");
+    return false;
   }
 
   if (
@@ -114,19 +129,24 @@ const checkInvoiceInfo = async (req, info) => {
     !district ||
     !addressLine
   ) {
-    throw new BadRequestError("All fields are required");
+    return false;
   }
 
-  const user = await userService.getCheckoutInfo(req);
+  const checkoutInfo = await userService.getCheckoutInfo({ email });
 
-  const { profile_firstName, profile_lastName, profile_phoneNumber } = user;
+  if (!checkoutInfo) {
+    return false;
+  }
+
+  const { profile_firstName, profile_lastName, profile_phoneNumber } =
+    checkoutInfo;
 
   const {
     address_addressLine,
     address_district,
     address_province,
     address_country,
-  } = user;
+  } = checkoutInfo;
 
   if (
     profile_firstName !== firstName ||
@@ -137,7 +157,7 @@ const checkInvoiceInfo = async (req, info) => {
     address_country !== country ||
     phoneNumber !== profile_phoneNumber
   ) {
-    throw new BadRequestError("Profile information does not match");
+    return false;
   }
 
   return true;

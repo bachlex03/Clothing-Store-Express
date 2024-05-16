@@ -1,52 +1,38 @@
-module.exports = class User {
-  firstName;
-  lastName;
-  phoneNumber;
-  country;
-  province;
-  district;
-  addressLine;
+module.exports = class Invoice {
+  user; // userId
+  products;
+  note;
+  status;
+  total;
 
   constructor() {}
 
-  setFirstName(firstName) {
-    this.firstName = firstName;
+  setUser(user) {
+    this.user = user;
 
     return this;
   }
 
-  setLastName(lastName) {
-    this.lastName = lastName;
+  setProducts(products) {
+    this.products = products;
 
     return this;
   }
 
-  setPhoneNumber(phoneNumber) {
-    this.phoneNumber = phoneNumber;
+  setNote(note) {
+    this.note = note;
 
     return this;
   }
 
-  setCountry(country) {
-    this.country = country;
+  setStatus(status) {
+    this.status = status;
 
     return this;
   }
 
-  setProvince(province) {
-    this.province = province;
-
-    return this;
-  }
-
-  setDistrict(district) {
-    this.district = district;
-
-    return this;
-  }
-
-  setAddressLine(addressLine) {
-    this.addressLine = addressLine;
+  setTotal(total) {
+    this.total = total;
 
     return this;
   }

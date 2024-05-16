@@ -21,11 +21,9 @@ const findOneUser = async (email, password) => {
   return user;
 };
 
-const getCheckoutInfo = async (req) => {
-  const { email } = req.user;
-
+const getCheckoutInfo = async ({ email }) => {
   if (!email) {
-    throw new BadRequestError("User not found");
+    throw new BadRequestError("Email not found");
   }
 
   const user = await userModel.findOne({ email }).populate({
@@ -36,6 +34,10 @@ const getCheckoutInfo = async (req) => {
       model: "address",
     },
   });
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
 
   let profile = user.user_profile;
   let address = profile.profile_address;

@@ -47,7 +47,7 @@ router.use("/", authenticationMiddleware);
  *          example: "Hồ Chí Minh"
  *         district:
  *          type: string
- *          example: "Quận 1"
+ *          example: "Thủ Đức"
  *         addressLine:
  *          type: string
  *          example: "106* Kha Van Can, Linh Dong, Thu Duc"

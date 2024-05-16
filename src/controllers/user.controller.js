@@ -6,7 +6,7 @@ class paymentController {
     new OK({
       message: "OK",
       statusCode: 200,
-      data: await userService.getCheckoutInfo(req),
+      data: await userService.getCheckoutInfo({ email: req.user.email }),
     }).send(res);
   }
 

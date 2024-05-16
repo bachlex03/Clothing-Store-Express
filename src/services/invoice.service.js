@@ -6,14 +6,14 @@ const userModel = require("../models/user.model");
 const userService = require("./user.service");
 
 const create = async ({
-  userEmail,
+  user_id,
   status,
   note = "",
   total,
   boughtProducts = [],
 }) => {
-  if (!userEmail) {
-    throw new BadRequestError("User email is required");
+  if (!user_id) {
+    throw new BadRequestError("Invalid user id");
   }
 
   if (!status) {
@@ -28,16 +28,8 @@ const create = async ({
     throw new BadRequestError("Bought products is required");
   }
 
-  const user = await userService.findOneByEmail(userEmail);
-
-  if (!user) {
-    throw new BadRequestError("User not found");
-  }
-
-  const { _id } = user;
-
   const invoice = invoiceModel.create({
-    invoice_user: _id,
+    invoice_user: user_id,
     invoice_products: [...boughtProducts],
     invoice_note: note,
     invoice_status: status,

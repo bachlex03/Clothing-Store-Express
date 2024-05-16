@@ -1,6 +1,5 @@
 const { model, Schema } = require("mongoose");
 const userModel = require("./user.model");
-const addressModel = require("./address.model");
 
 const COLLECTION_NAME = "Invoices";
 const DOCUMENT_NAME = "invoice";
@@ -46,11 +45,6 @@ const invoiceSchema = new Schema(
     invoice_user: {
       type: Schema.Types.ObjectId,
       ref: userModel,
-      required: true,
-    },
-    invoice_address: {
-      type: Schema.Types.ObjectId,
-      ref: addressModel,
       required: true,
     },
     invoice_products: {

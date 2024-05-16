@@ -4,11 +4,18 @@ const productModel = require("../models/product.model");
 const inventoryService = require("../services/inventory.service");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 const Database = require("../db/mongo.config");
-const { sizesEnum, colorsEnum, statusEnum } = require("../common/enum");
+const {
+  sizesEnum,
+  colorsEnum,
+  statusEnum,
+  GenderEnum,
+  genderArr,
+} = require("../common/enum");
 const generateProductCode = require("../utils/generate-product-code");
 const cloundinaryService = require("../cloundinary/cloundService");
 const { deleteFile } = require("../utils/handle-os-file");
 const { getValueObj } = require("../utils/getValueObj");
+const Product = require("../entities/product.entity");
 
 const DEFAULT_STATUS = "Draft";
 
@@ -30,90 +37,80 @@ const create = async (req) => {
     status = "Draft",
   } = req.body;
 
-  console.log("req.body", req.body);
+  // console.log("req.body", req.body);
 
   images = req.files;
 
-  // Check if product name is empty
-  if (!name) {
-    throw new BadRequestError("Product name is required");
-  }
-
-  // Check if colors is empty or not in colorsEnum
-  if (!sizes.length > 0) {
-    throw new BadRequestError("Size is required");
-  } else {
-    if (typeof sizes === "string") {
-      sizes = sizes.split(",");
-    }
-    sizes.forEach((size) => {
-      if (!sizesEnum.includes(size)) {
-        throw new BadRequestError("Invalid size value");
-      }
-    });
-  }
-
-  // Check if sizes is empty or not in sizesEnum
-  if (!color || !colorsEnum.includes(color)) {
-    throw new BadRequestError("Invalid color value");
-  }
-
-  // Check if product quantity is less than 0
-  if (quantity < 0) {
-    throw new BadRequestError("quantity must be greater than 0");
-  }
-
-  // Check status value
-  if (!statusEnum.includes(status)) {
-    status = DEFAULT_STATUS;
-  }
-
+  // generate product code
   const code = generateProductCode({ brand, category: category, gender });
 
-  const filters = {
-    product_slug: name.trim().toLowerCase().replace(/ /g, "-"),
-  };
+  // Starting create product
+  const product = new Product();
 
-  const opts = {
-    upsert: true,
-    new: true,
-  };
+  product
+    .setName(name)
+    .setDescription(description)
+    .setQuantity(quantity)
+    .setPrice(price)
+    .setCode(code)
+    .setStatus(status)
+    .setColor(color)
+    .setSizes(sizes)
+    .setCategory(categoryId)
+    .setType(type)
+    .setGender(gender)
+    .setImages(images);
+
+  const isValid = validateInfo(product);
+
+  if (!isValid) {
+    throw new BadRequestError("Something went wrong when create product!");
+  }
 
   let saveImages = [];
 
-  console.log("images", images);
-
-  if (images) {
-    for (let i = 0; i < images.length; i++) {
-      const result = await cloundinaryService.uploadImage(images[i].path);
+  if (product.images) {
+    for (let i = 0; i < product.images.length; i++) {
+      const result = await cloundinaryService.uploadImage(
+        product.images[i].path
+      );
 
       saveImages.push(result);
 
-      deleteFile(images[i].path);
+      deleteFile(product.images[i].path);
     }
   }
 
   const mongo = Database.getInstance();
 
-  const products = sizes.map(async (size, index) => {
+  const products = product.sizes.map(async (size, index) => {
     const update = {
-      product_code: code,
-      product_name: name,
-      product_description: description,
-      product_type: type,
-      product_gender: gender,
-      product_brand: brand,
-      product_category: categoryId,
+      product_code: product.code,
+      product_name: product.name,
+      product_description: product.description,
+      product_type: product.type,
+      product_gender: product.gender,
+      product_brand: product.brand,
+      product_category: product.category,
       $addToSet: {
-        product_colors: color,
+        product_colors: product.color,
         product_sizes: size,
       },
       $inc: {
-        product_stocks: parseInt(quantity),
+        product_stocks: parseInt(product.quantity),
       },
-      product_price: price,
+      product_price: product.price,
       product_imgs: saveImages ? saveImages : [],
-      product_status: status,
+      product_status: product.status,
+    };
+
+    const filters = {
+      product_slug: product.name.trim().toLowerCase().replace(/ /g, "-"),
+    };
+
+    const opts = {
+      upsert: true,
+      new: true,
     };
 
     let session = await mongo.startSession();
@@ -166,7 +163,9 @@ const getAll = async () => {
 const getBySlug = async (params) => {
   const { slug } = params;
 
-  let product = await productModel.findOne({ product_slug: slug });
+  let product = await productModel
+    .findOne({ product_slug: slug })
+    .populate("product_category");
 
   if (!product) {
     throw new NotFoundError("Product not found");
@@ -273,6 +272,51 @@ const getByQueryParam = async (query) => {
   }
 
   return products;
+};
+
+const validateInfo = (product = Product) => {
+  console.log("product", product);
+  //Check if product name is empty
+  if (!product.name) {
+    throw new BadRequestError("Product name is required");
+  }
+
+  // Check if colors is empty or not in colorsEnum
+  if (!product.sizes.length > 0) {
+    throw new BadRequestError("Size is required");
+  } else {
+    if (typeof product.sizes === "string") {
+      product.sizes = product.sizes.split(",");
+    }
+
+    product.sizes.forEach((size) => {
+      if (!sizesEnum.includes(size)) {
+        throw new BadRequestError("Invalid size value");
+      }
+    });
+  }
+
+  // Check if color is empty or not in sizesEnum
+  if (!product.color || !colorsEnum.includes(product.color)) {
+    throw new BadRequestError("Invalid color value");
+  }
+
+  // Check if product quantity is less than 0
+  if (product.quantity < 0) {
+    throw new BadRequestError("quantity must be greater than 0");
+  }
+
+  // Check status value
+  if (!statusEnum.includes(product.status)) {
+    product.status = DEFAULT_STATUS;
+  }
+
+  // Check status value
+  if (!genderArr.includes(product.gender)) {
+    product.gender = GenderEnum.UNISEX;
+  }
+
+  return true;
 };
 
 module.exports = {

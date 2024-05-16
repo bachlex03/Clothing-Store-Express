@@ -1,4 +1,4 @@
-const paymentService = require("../services/paymentService");
+const paymentService = require("../services/payment.service");
 const { OK, CREATED } = require("../core/success.response");
 
 class paymentController {

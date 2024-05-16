@@ -240,7 +240,7 @@ class AccessService {
     const { password, confirmPassword } = req.body;
 
     if (!q) {
-      throw new AuthenticationError("Not permitted to access");
+      throw new AuthenticationError("Token missing");
     }
 
     if (password !== confirmPassword) {
@@ -249,8 +249,10 @@ class AccessService {
 
     const decoded = decode(q);
 
+    console.log("decoded", decoded);
+
     if (!decoded) {
-      throw new AuthenticationError("Not permitted to access");
+      throw new AuthenticationError("Validate token failed");
     }
 
     const { email } = decoded;

@@ -16,6 +16,7 @@ module.exports = (passport) => {
   passport.use(
     "jwt",
     new JwtStrategy(opts, async (jwtPayload, next) => {
+      console.log("jwtPayload", jwtPayload);
       const user = await userService.findOneAuth(jwtPayload.email);
 
       return next(null, user);

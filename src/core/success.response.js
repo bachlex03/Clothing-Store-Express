@@ -15,10 +15,6 @@ class SuccessResponse {
   send(res) {
     return res.status(this.status).json(this);
   }
-
-  redirect(res) {
-    return res.redirect("/verify?token=" + this.data);
-  }
 }
 
 class OK extends SuccessResponse {

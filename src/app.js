@@ -19,10 +19,6 @@ const EventEmitter = require("events");
 
 global._paymentEvent = new EventEmitter();
 
-setTimeout(() => {
-  global._paymentEvent.emit("payment-success", "data");
-}, 2000);
-
 app.use(
   cors({
     origin: true,

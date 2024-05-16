@@ -29,7 +29,7 @@ const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
   const LOCALE = "vn";
   const CURR_CODE = "VND";
   const ORDER_TYPE = "200000";
-  const RETURN_URL = "http://localhost:3001/api/v1/vnpay/vnpay_ipn";
+  const RETURN_URL = "http://localhost:3000/shop";
 
   const vnp_Params = {};
 
@@ -37,7 +37,7 @@ const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
   vnp_Params["vnp_Command"] = "pay";
   vnp_Params["vnp_CreateDate"] = createDate;
   vnp_Params["vnp_CurrCode"] = CURR_CODE;
-  vnp_Params["vnp_ExpireDate"] = expireDate;
+  // vnp_Params["vnp_ExpireDate"] = expireDate;
   vnp_Params["vnp_IpAddr"] = "13.160.92.202";
   vnp_Params["vnp_Locale"] = LOCALE;
   vnp_Params["vnp_OrderInfo"] = "Thanh toan don hang";
@@ -68,6 +68,8 @@ const createPaymentUrl = async (amount, boughtItems, invoiceInfo = {}) => {
       total: invoiceInfo.invoice_total,
       boughtProducts: invoiceInfo.invoice_products,
     });
+
+    return data;
   });
 
   return vnpUrl;
@@ -95,11 +97,15 @@ const vnpayIpn = async (req) => {
     };
 
     global._paymentEvent.emit("payment-success", data);
+
+    return data;
   } else {
     data = {
       RspCode: "97",
       message: "Fail checksum",
     };
+
+    return data;
   }
 };
 

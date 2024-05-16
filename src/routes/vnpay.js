@@ -12,7 +12,7 @@ const vnpayController = require("../controllers/vnpay.controller");
  *  name: Vnpay
  *  description: third party payment gateway
  */
-router.use("/", authenticationMiddleware);
+// router.use("/", authenticationMiddleware);
 
 /**
  * @swagger

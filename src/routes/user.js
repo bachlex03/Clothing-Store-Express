@@ -38,6 +38,51 @@ router.get(
 
 /**
  * @swagger
+ * /api/v1/users/checkoutInfo:
+ *  put:
+ *   tags: [User]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         firstName:
+ *          type: string
+ *         lastName:
+ *          type: string
+ *         phoneNumber:
+ *          type: string
+ *          example: "0123456789"
+ *         district:
+ *          type: string
+ *          example: "Thu Duc"
+ *         province:
+ *          type: string
+ *          example: "Ho Chi Minh"
+ *         country:
+ *          type: string
+ *          example: "Vietnam"
+ *         addressLine:
+ *          type: string
+ *          example: "106* Kha Van Can, Linh Dong, Thu Duc"
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.put(
+  "/checkoutInfo",
+  grantAccess("updateOwn", "users"),
+  ErrorHandler(userController.updateCheckoutInfo)
+);
+
+/**
+ * @swagger
  * /api/v1/users/profile:
  *   get:
  *     tags: [User]
@@ -117,7 +162,7 @@ router.get(
  *          example: "Quận 1"
  *         country:
  *          type: string
- *          example: "Vietnam"
+ *          example: "Việt Nam"
  *   responses:
  *    '200':
  *      description: OK
@@ -146,8 +191,10 @@ router.put(
  *        properties:
  *         firstName:
  *          type: string
+ *          example: "string"
  *         lastName:
  *          type: string
+ *          example: "string"
  *         phoneNumber:
  *          type: string
  *          example: "0123456789"
@@ -163,6 +210,41 @@ router.put(
   "/profile",
   grantAccess("updateOwn", "users"),
   ErrorHandler(userController.updateProfile)
+);
+
+/**
+ * @swagger
+ * /api/v1/users/password:
+ *  patch:
+ *   tags: [User]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         currentPassword:
+ *          type: string
+ *          example: "string"
+ *         newPassword:
+ *          type: string
+ *          example: "string"
+ *         confirmPassword:
+ *          type: string
+ *          example: "string"
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.patch(
+  "/password",
+  grantAccess("updateOwn", "users"),
+  ErrorHandler(userController.changeCurrentPassword)
 );
 
 module.exports = router;

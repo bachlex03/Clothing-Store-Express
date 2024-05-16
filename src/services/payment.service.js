@@ -3,11 +3,11 @@
 const {
   BadRequestError,
   AuthenticationError,
-} = require("../core/error.response");
-const userService = require("./user.service");
+} = require("../core/error.response.js");
+const userService = require("./user.service.js");
 const vnpayService = require("../vnpay/vnpay.service.js");
-const inventoryService = require("./inventory.service");
-const productService = require("./product.service");
+const inventoryService = require("./inventory.service.js");
+const productService = require("./product.service.js");
 
 const payInvoice = async (req) => {
   const {
@@ -16,7 +16,7 @@ const payInvoice = async (req) => {
     phoneNumber = "",
     country = "",
     province = "",
-    city = "",
+    district = "",
     addressLine = "",
     note = "",
   } = req.body;
@@ -31,7 +31,7 @@ const payInvoice = async (req) => {
     phoneNumber,
     country,
     province,
-    city,
+    district,
     addressLine,
   };
 
@@ -95,7 +95,7 @@ const checkInvoiceInfo = async (req, info) => {
     phoneNumber = "",
     country = "",
     province = "",
-    city = "",
+    district = "",
     addressLine = "",
   } = info;
 
@@ -111,7 +111,7 @@ const checkInvoiceInfo = async (req, info) => {
     !phoneNumber ||
     !country ||
     !province ||
-    !city ||
+    !district ||
     !addressLine
   ) {
     throw new BadRequestError("All fields are required");
@@ -123,7 +123,7 @@ const checkInvoiceInfo = async (req, info) => {
 
   const {
     address_addressLine,
-    address_city,
+    address_district,
     address_province,
     address_country,
   } = user;
@@ -132,7 +132,7 @@ const checkInvoiceInfo = async (req, info) => {
     profile_firstName !== firstName ||
     profile_lastName !== lastName ||
     address_addressLine !== addressLine ||
-    address_city !== city ||
+    address_district !== district ||
     address_province !== province ||
     address_country !== country ||
     phoneNumber !== profile_phoneNumber
@@ -208,75 +208,7 @@ const checkTotalPriceAndAttackId = async (boughtItems) => {
 
 const viewDetails = async (params) => {};
 
-const updateAddresses = async (req) => {
-  const {
-    firstName = "",
-    lastName = "",
-    phoneNumber = "",
-    country = "",
-    province = "",
-    city = "",
-    addressLine = "",
-  } = req.body;
-
-  const { email } = req.user;
-
-  if (!email) {
-    throw new AuthenticationError("User not found");
-  }
-
-  if (
-    !firstName ||
-    !lastName ||
-    !addressLine ||
-    !city ||
-    !province ||
-    !country ||
-    !phoneNumber
-  ) {
-    throw new BadRequestError("All fields are required");
-  }
-
-  const user = await userService.updateUserCheckout(email);
-
-  const newProfileObj = {
-    profile_firstName: firstName,
-    profile_lastName: lastName,
-    profile_phoneNumber: phoneNumber,
-  };
-
-  const newAddressObj = {
-    address_country: country,
-    address_province: province,
-    address_city: city,
-    address_addressLine: addressLine,
-  };
-
-  const profile = user.user_profile;
-  const address = profile.profile_address;
-
-  // // Update profile fields
-  if (profile) {
-    // If user has an existing profile, update it
-    Object.assign(user.user_profile, newProfileObj);
-
-    await user.user_profile.save();
-  }
-
-  if (address) {
-    Object.assign(user.user_profile.profile_address, newAddressObj);
-
-    await user.user_profile.profile_address.save();
-  }
-
-  // Save changes to the user
-  await user.save();
-
-  return user;
-};
-
 module.exports = {
   payInvoice,
   viewDetails,
-  updateAddresses,
 };

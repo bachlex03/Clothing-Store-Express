@@ -12,7 +12,6 @@ class paymentController {
 
   async vnpayIpn(req, res) {
     new OK({
-      message: "Payment success",
       statusCode: 200,
       data: await paymentService.vnpayIpn(req),
     }).send(res);

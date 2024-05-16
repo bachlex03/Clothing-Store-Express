@@ -7,6 +7,7 @@ const profileModel = require("../models/profile.model");
 const addressModel = require("../models/address.model");
 const InvoiceModel = require("../models/invoice.model");
 const { getValueObj } = require("../utils/getValueObj");
+const bcrypt = require("bcrypt");
 
 const findOneByEmail = async (email) => {
   const user = await userModel.findOne({ email }).lean().exec();
@@ -48,7 +49,7 @@ const getCheckoutInfo = async (req) => {
     obj: address,
     fields: [
       "address_addressLine",
-      "address_city",
+      "address_district",
       "address_province",
       "address_country",
     ],
@@ -57,9 +58,29 @@ const getCheckoutInfo = async (req) => {
   return { ...profile, ...address };
 };
 
-const updateUserCheckout = async (email) => {
-  if (!email) {
-    throw new BadRequestError("User not found");
+const updateCheckoutInfo = async (req) => {
+  const {
+    firstName = "",
+    lastName = "",
+    phoneNumber = "",
+    country = "",
+    province = "",
+    district = "",
+    addressLine = "",
+  } = req.body;
+
+  const { email } = req.user;
+
+  if (
+    !firstName ||
+    !lastName ||
+    !addressLine ||
+    !district ||
+    !province ||
+    !country ||
+    !phoneNumber
+  ) {
+    throw new BadRequestError("All fields are required");
   }
 
   const user = await userModel.findOne({ email }).populate({
@@ -70,6 +91,60 @@ const updateUserCheckout = async (email) => {
       model: "address",
     },
   });
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const newProfileObj = {
+    profile_firstName: firstName,
+    profile_lastName: lastName,
+    profile_phoneNumber: phoneNumber,
+  };
+
+  const newAddressObj = {
+    address_country: country,
+    address_province: province,
+    address_district: district,
+    address_addressLine: addressLine,
+  };
+
+  const profile = user.user_profile;
+  const address = profile.profile_address;
+
+  const mongo = Database.getInstance();
+  let session = await mongo.startSession();
+
+  try {
+    // // Update profile fields
+    if (profile) {
+      session.startTransaction();
+
+      // If user has an existing profile, update it
+      Object.assign(user.user_profile, newProfileObj);
+
+      await user.user_profile.save();
+    }
+
+    if (address) {
+      Object.assign(user.user_profile.profile_address, newAddressObj);
+
+      await user.user_profile.profile_address.save();
+    }
+
+    // Save changes to the user
+    await user.save();
+
+    await session.commitTransaction();
+
+    session.endSession();
+  } catch (err) {
+    await session.abortTransaction();
+
+    session.endSession();
+    throw new BadRequestError(err);
+  } finally {
+  }
 
   return user;
 };
@@ -119,7 +194,7 @@ const getAddress = async (req) => {
     obj: address,
     fields: [
       "address_addressLine",
-      "address_city",
+      "address_district",
       "address_province",
       "address_country",
     ],
@@ -299,6 +374,44 @@ const findOneAuth = async (email) => {
   return user;
 };
 
+const changeCurrentPassword = async (req) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+
+  const { email } = req.user;
+
+  if (newPassword !== confirmPassword) {
+    throw new BadRequestError("Password not match");
+  }
+
+  const user = await findOneByEmail(email);
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  // compare password
+  if (!(await bcrypt.compare(currentPassword, user.password))) {
+    throw new BadRequestError("Password not match");
+  }
+
+  try {
+    const user = await userModel.findOneAndUpdate(
+      {
+        email: email,
+      },
+      {
+        password: confirmPassword,
+      }
+    );
+
+    return !!user;
+  } catch (err) {
+    console.log(err);
+  }
+
+  return false;
+};
+
 module.exports = {
   findOneByEmail,
   createUser,
@@ -307,10 +420,12 @@ module.exports = {
   getCheckoutInfo,
   getProfile,
   getAddress,
-  updateUserCheckout,
   updateAddresses,
   updateProfile,
   getInvoices,
   updateVerify,
   findOneAuth,
+  updatePassword,
+  changeCurrentPassword,
+  updateCheckoutInfo,
 };

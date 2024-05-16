@@ -10,6 +10,14 @@ class paymentController {
     }).send(res);
   }
 
+  async updateCheckoutInfo(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await userService.updateCheckoutInfo(req),
+    }).send(res);
+  }
+
   async getProfile(req, res) {
     new OK({
       message: "OK",
@@ -47,6 +55,22 @@ class paymentController {
       message: "OK",
       statusCode: 200,
       data: await userService.getInvoices(req),
+    }).send(res);
+  }
+
+  async updatePassword(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await userService.updatePassword(req),
+    }).send(res);
+  }
+
+  async changeCurrentPassword(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await userService.changeCurrentPassword(req),
     }).send(res);
   }
 }

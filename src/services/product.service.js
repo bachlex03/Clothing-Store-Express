@@ -142,9 +142,9 @@ const create = async (req) => {
       await session.abortTransaction();
       session.endSession();
 
-      saveImages.forEach(async (image) => {
-        const response = await cloundinaryService.deleteImage(image.public_id);
-      });
+      // saveImages.forEach(async (image) => {
+      //   const response = await cloundinaryService.deleteImage(image.public_id);
+      // });
 
       throw new BadRequestError(err.message);
     }
@@ -209,6 +209,24 @@ const getBySlug = async (params) => {
   const result = { ...product.toObject(), skus: [...flat] };
 
   return result;
+};
+
+// [GET] /api/v1/products?q=
+const getBySearchQuery = async (query) => {
+  const { q } = query;
+
+  if (!q) {
+    return [];
+  }
+
+  const products = await productModel
+    .find({
+      product_name: { $regex: q, $options: "i" },
+      product_slug: { $regex: q, $options: "i" },
+    })
+    .populate("product_category");
+
+  return products;
 };
 
 // [GET] /api/v1/products/:slug/images
@@ -419,6 +437,7 @@ module.exports = {
   getImages,
   getByQueryParam,
   remove,
+  getBySearchQuery,
 };
 
 // images = imagesUpload.map((image) => {

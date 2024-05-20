@@ -23,7 +23,7 @@ const productController = require("../controllers/product.controller");
 
 /**
  * @swagger
- * /api/v1/products?q={q}:
+ * /api/v1/products/search?q={q}:
  *   get:
  *     tags: [Products]
  *     parameters:
@@ -31,7 +31,6 @@ const productController = require("../controllers/product.controller");
  *         name: q
  *         schema:
  *           type: string
- *         description: q is enum=[min, full].
  *     responses:
  *       '200':
  *         description: OK
@@ -40,7 +39,7 @@ const productController = require("../controllers/product.controller");
  *             schema:
  *               type: object
  */
-router.get("/", ErrorHandler(productController.getByQueryParam));
+router.get("/search", ErrorHandler(productController.getBySearchQuery));
 
 /**
  * @swagger

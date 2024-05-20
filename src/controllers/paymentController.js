@@ -25,6 +25,14 @@ class paymentController {
       data: await paymentService.updateAddresses(req),
     }).send(res);
   }
+
+  async payInvoiceCash(req, res) {
+    new CREATED({
+      message: "Processing payment...",
+      statusCode: 200,
+      data: await paymentService.payInvoiceCash(req),
+    }).send(res);
+  }
 }
 
 module.exports = new paymentController();

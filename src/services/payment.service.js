@@ -9,6 +9,7 @@ const vnpayService = require("../vnpay/vnpay.service.js");
 const inventoryService = require("./inventory.service.js");
 const productService = require("./product.service.js");
 const Invoice = require("../entities/invoice.entity.js");
+const invoiceService = require("../services/invoice.service");
 
 const payInvoice = async (req) => {
   const {
@@ -104,6 +105,105 @@ const payInvoice = async (req) => {
   return {
     url: vnpayUrl,
   };
+};
+
+const payInvoiceCash = async (req) => {
+  const {
+    firstName = "",
+    lastName = "",
+    phoneNumber = "",
+    country = "",
+    province = "",
+    district = "",
+    addressLine = "",
+    note = "",
+  } = req.body;
+
+  const { email } = req.user;
+
+  let { boughtItems = [], totalPrice } = req.body;
+
+  const info = {
+    firstName,
+    lastName,
+    phoneNumber,
+    country,
+    province,
+    district,
+    addressLine,
+  };
+
+  // Validate bought items
+  if (boughtItems.length === 0) {
+    throw new BadRequestError("No items available");
+  }
+
+  try {
+    totalPrice = parseInt(totalPrice) * 25000;
+  } catch (error) {
+    throw new BadRequestError("Invalid total price");
+  }
+
+  // check user
+  const user = await userService.findOneByEmail(email);
+
+  if (!user) {
+    throw new AuthenticationError("User not found");
+  }
+
+  // Validate checkout information
+  const isInfoValid = await checkInvoiceInfo(email, info);
+
+  if (!isInfoValid) {
+    throw new BadRequestError("Invalid checkout information");
+  }
+
+  // Validate price and attack id to bought items
+  let boughtItemsAttackedId = [];
+
+  try {
+    const { totalPrice: verifyTotal, processedProducts } =
+      await checkTotalPriceAndAttackId(boughtItems);
+
+    console.log("verifyTotal", verifyTotal);
+    console.log("totalPrice", totalPrice);
+
+    boughtItemsAttackedId = processedProducts;
+
+    if (totalPrice !== verifyTotal * 25000) {
+      throw new BadRequestError("Total price does not match");
+    }
+  } catch (error) {
+    throw new BadRequestError(error);
+  }
+
+  // Create invoice
+  const invoice = new Invoice();
+
+  invoice
+    .setUser(user._id)
+    .setProducts(boughtItemsAttackedId)
+    .setNote(note)
+    .setStatus("unpaid")
+    .setTotal(totalPrice);
+
+  console.log("invoice", invoice.getInstance());
+
+  console.log("invoice", invoice.user);
+
+  const response = await invoiceService.create({
+    user_id: invoice.user,
+    status: invoice.status,
+    total: invoice.total,
+    boughtProducts: invoice.products,
+    note: invoice.note,
+  });
+
+  if (!invoice) {
+    throw new BadRequestError("Invoice not created");
+  }
+
+  return invoice;
 };
 
 const checkInvoiceInfo = async (email, info) => {
@@ -234,4 +334,5 @@ const viewDetails = async (params) => {};
 module.exports = {
   payInvoice,
   viewDetails,
+  payInvoiceCash,
 };

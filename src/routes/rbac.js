@@ -72,6 +72,25 @@ router.get(
 
 /**
  * @swagger
+ * /api/v1/rbac/roles/categories:
+ *   get:
+ *     tags: [RBAC]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get(
+  "/roles/categories",
+  grantAccess("readAny", "rbac"),
+  ErrorHandler(rbacController.getRoleCategories)
+);
+
+/**
+ * @swagger
  * /api/v1/rbac/resource:
  *  post:
  *   tags: [RBAC]

@@ -416,6 +416,67 @@ const changeCurrentPassword = async (req) => {
   return false;
 };
 
+const createBusinessAccount = async (req) => {
+  const { email, password, firstName, lastName, phoneNumber, role } = req.body;
+
+  console.log({ email, password, firstName, lastName, phoneNumber, role });
+
+  if (!email || !password || !firstName || !lastName || !phoneNumber || !role) {
+    throw new BadRequestError("All fields are required");
+  }
+
+  const user = await findOneByEmail(email);
+
+  if (user) {
+    throw new BadRequestError("User already exists");
+  }
+
+  const filter = {
+    email,
+  };
+
+  const update = {
+    email,
+    password,
+    roles: [role],
+  };
+
+  const opts = {
+    upsert: true,
+    new: true,
+  };
+
+  const address = await addressModel.create({});
+  const profile = await profileModel.create({
+    profile_firstName: firstName,
+    profile_lastName: lastName,
+    profile_phoneNumber: phoneNumber,
+    profile_address: address._id,
+  });
+
+  const account = await userModel.create({
+    email,
+    password,
+    roles: [role],
+    verified: true,
+    user_profile: profile._id,
+  });
+
+  return account;
+};
+
+const getMember = async (req) => {
+  const users = await userModel
+    .find({
+      roles: { $ne: ["66434d1afd0d76dfa0eee8af"] },
+    })
+    .populate("roles")
+    .populate("user_profile")
+    .lean();
+
+  return users;
+};
+
 module.exports = {
   findOneByEmail,
   createUser,
@@ -432,4 +493,6 @@ module.exports = {
   updatePassword,
   changeCurrentPassword,
   updateCheckoutInfo,
+  createBusinessAccount,
+  getMember,
 };

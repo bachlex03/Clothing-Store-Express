@@ -250,3 +250,61 @@ router.patch(
 );
 
 module.exports = router;
+
+/**
+ * @swagger
+ * /api/v1/users/business-account:
+ *  post:
+ *   tags: [User]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         firstName:
+ *          type: string
+ *         lastName:
+ *          type: string
+ *         phoneNumber:
+ *          type: string
+ *         account:
+ *          type: string
+ *         password:
+ *          type: string
+ *         role:
+ *          type: string
+ *          example: "66434d1afd0d76dfa0eee8af"
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.post(
+  "/business-account",
+  grantAccess("createAny", "users"),
+  ErrorHandler(userController.createBusinessAccount)
+);
+
+/**
+ * @swagger
+ * /api/v1/users/business/member:
+ *   get:
+ *     tags: [User]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get(
+  "/business/member",
+  grantAccess("readAny", "users"),
+  ErrorHandler(userController.getMember)
+);

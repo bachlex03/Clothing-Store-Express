@@ -129,9 +129,28 @@ const roleList = async () => {
   }
 };
 
+const roleCategories = async () => {
+  try {
+    // 2. get role list
+    const roles = await RoleModel.aggregate([
+      {
+        $project: {
+          _id: 1, // Include the original _id field
+          name: "$role_name", // Rename role_name to name
+        },
+      },
+    ]);
+
+    return roles;
+  } catch (error) {
+    return [];
+  }
+};
+
 module.exports = {
   createRole,
   createResource,
   resourceList,
   roleList,
+  roleCategories,
 };

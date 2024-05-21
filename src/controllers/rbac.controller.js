@@ -33,6 +33,14 @@ class rbacController {
       data: await rbacService.roleList(req),
     }).send(res);
   }
+
+  async getRoleCategories(req, res) {
+    new OK({
+      message: "Get role categories",
+      statusCode: 200,
+      data: await rbacService.roleCategories(req),
+    }).send(res);
+  }
 }
 
 module.exports = new rbacController();

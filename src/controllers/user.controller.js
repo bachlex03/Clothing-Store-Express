@@ -73,6 +73,22 @@ class paymentController {
       data: await userService.changeCurrentPassword(req),
     }).send(res);
   }
+
+  async createBusinessAccount(req, res) {
+    new CREATED({
+      message: "Created",
+      statusCode: 201,
+      data: await userService.createBusinessAccount(req),
+    }).send(res);
+  }
+
+  async getMember(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await userService.getMember(req),
+    }).send(res);
+  }
 }
 
 module.exports = new paymentController();

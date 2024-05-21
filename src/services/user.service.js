@@ -7,6 +7,7 @@ const profileModel = require("../models/profile.model");
 const addressModel = require("../models/address.model");
 const InvoiceModel = require("../models/invoice.model");
 const { getValueObj } = require("../utils/getValueObj");
+const productModel = require("../models/product.model");
 const bcrypt = require("bcrypt");
 
 const findOneByEmail = async (email) => {
@@ -331,10 +332,17 @@ const updatePassword = async (email, password) => {
 const getInvoices = async (req) => {
   const { email } = req.user;
 
-  const user = await findOneByEmail(email);
+  const user = await userModel
+    .findOne({ email })
+    .populate({
+      path: "user_profile",
+      model: "profile",
+    })
+    .lean()
+    .exec();
 
   if (!user) {
-    throw new BadRequestError("User not found");
+    throw new BadRequestError("User or profile not found");
   }
 
   const results = await InvoiceModel.find({ invoice_user: user._id })
@@ -345,10 +353,41 @@ const getInvoices = async (req) => {
     return [];
   }
 
-  return getValueObj({
-    obj: results,
-    fields: ["invoice_status", "invoice_total", "invoice_products"],
-  });
+  const processedResults = await Promise.all(
+    results.map(async (invoice) => {
+      const { profile_firstName, profile_lastName } = user.user_profile || {};
+      const products = await Promise.all(
+        invoice.invoice_products.map(async (product) => {
+          const dbProduct = await productModel
+            .findById(product._id)
+            .lean()
+            .exec();
+          if (!dbProduct) {
+            throw new Error(`Product not found for ID: ${product._id}`);
+          }
+          return { ...product, slug: dbProduct.product_slug };
+        })
+      );
+      return {
+        ...getValueObj({
+          obj: invoice,
+          fields: [
+            "_id",
+            "createdAt",
+            "invoice_status",
+            "invoice_total",
+            "invoice_products",
+          ],
+        }),
+        invoice_fullname: `${profile_firstName || ""} ${
+          profile_lastName || ""
+        }`,
+        invoice_products: products,
+      };
+    })
+  );
+
+  return processedResults;
 };
 
 const updateVerify = async (email) => {

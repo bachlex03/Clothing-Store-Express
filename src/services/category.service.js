@@ -3,6 +3,7 @@
 const { Schema } = require("mongoose");
 const { BadRequestError } = require("../core/error.response");
 const categoryModel = require("../models/category.model");
+const productModel = require("../models/product.model");
 
 const create = async (body) => {
   let { name = "", parentId = null } = body;
@@ -86,8 +87,31 @@ const withChildren = async () => {
   return null;
 };
 
+const getProductsByCategory = async (params) => {
+  const { slug } = params;
+
+  console.log("slug", slug);
+
+  if (!slug) {
+    throw new BadRequestError("Invalid category slug");
+  }
+
+  const category = await categoryModel.findOne({ category_slug: slug });
+
+  if (!category) {
+    throw new BadRequestError("Category not found");
+  }
+
+  const products = await productModel.find({
+    product_category: category._id,
+  });
+
+  return products;
+};
+
 module.exports = {
   create,
   getAll,
   withChildren,
+  getProductsByCategory,
 };

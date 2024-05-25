@@ -18,6 +18,14 @@ class CategoryController {
     }).send(res);
   }
 
+  async getProductsByCategory(req, res) {
+    new CREATED({
+      message: "OK",
+      statusCode: 200,
+      data: await categoryService.getProductsByCategory(req.params),
+    }).send(res);
+  }
+
   async withChildren(req, res) {
     new CREATED({
       message: "OK",

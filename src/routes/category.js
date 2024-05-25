@@ -30,6 +30,31 @@ router.get("/", ErrorHandler(categoryController.getAll));
 
 /**
  * @swagger
+ * /api/v1/categories/{slug}/products:
+ *   get:
+ *     tags: [Categories]
+ *     parameters:
+ *       - name: slug
+ *         in: path
+ *         required: true
+ *         description: The slug of the product
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get(
+  "/:slug/products",
+  ErrorHandler(categoryController.getProductsByCategory)
+);
+
+/**
+ * @swagger
  * /api/v1/categories/withChildren:
  *   get:
  *     tags: [Categories]

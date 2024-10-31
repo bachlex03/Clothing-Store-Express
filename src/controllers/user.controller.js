@@ -89,6 +89,31 @@ class paymentController {
       data: await userService.getMember(req),
     }).send(res);
   }
+
+  async getInvoiceReviews(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await userService.getInvoiceReviews(req),
+    }).send(res);
+  }
+
+  async addProductReview(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await userService.addProductReview(req),
+    }).send(res);
+  }
+
+  async updateProductReview(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await userService.updateProductReview(req),
+    }).send(res);
+  }
+
 }
 
 module.exports = new paymentController();

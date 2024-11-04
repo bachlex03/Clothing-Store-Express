@@ -169,9 +169,16 @@ const remove = async (id) => {
 
 // [GET] /api/v1/products
 const getAll = async () => {
-  const products = await productModel.find().populate("product_category");
-
-  console.log("products", products);
+  const products = await productModel
+    .find()
+    .populate("product_category")
+    .populate({
+      path: 'product_promotions',
+      match: {
+        promotion_start_date: { $lte: new Date() },
+        promotion_end_date: { $gt: new Date() }
+      }
+    });
 
   return products;
 };
@@ -182,7 +189,14 @@ const getBySlug = async (params) => {
 
   let product = await productModel
     .findOne({ product_slug: slug })
-    .populate("product_category");
+    .populate("product_category")
+    .populate({
+      path: 'product_promotions',
+      match: {
+        promotion_start_date: { $lte: new Date() },
+        promotion_end_date: { $gt: new Date() }
+      }
+    });
 
   if (!product) {
     throw new NotFoundError("Product not found");
@@ -207,7 +221,10 @@ const getBySlug = async (params) => {
     };
   });
 
-  const result = { ...product.toObject(), skus: [...flat] };
+  const result = { 
+    ...product.toObject(), 
+    skus: [...flat]
+  };
 
   return result;
 };
@@ -225,7 +242,14 @@ const getBySearchQuery = async (query) => {
       product_name: { $regex: q, $options: "i" },
       product_slug: { $regex: q, $options: "i" },
     })
-    .populate("product_category");
+    .populate("product_category")
+    .populate({
+      path: 'product_promotions',
+      match: {
+        promotion_start_date: { $lte: new Date() },
+        promotion_end_date: { $gt: new Date() }
+      }
+    });
 
   return products;
 };
@@ -250,7 +274,16 @@ const getImages = async (params) => {
 // [GET] /api/v1/products?q=
 const getByQueryParam = async (query) => {
   if (query.q === "min") {
-    const products = await productModel.find().populate("product_category");
+    const products = await productModel
+      .find()
+      .populate("product_category")
+      .populate({
+        path: 'product_promotions',
+        match: {
+          promotion_start_date: { $lte: new Date() },
+          promotion_end_date: { $gt: new Date() }
+        }
+      });
 
     if (!products) {
       throw new NotFoundError("Products not found");
@@ -265,7 +298,7 @@ const getByQueryParam = async (query) => {
           "product_name",
           "product_price",
           "product_imgs",
-          "product_category",
+          "product_category", 
           "product_brand",
           "product_slug",
           "product_status",
@@ -274,6 +307,8 @@ const getByQueryParam = async (query) => {
           "product_colors",
           "product_type",
           "_id",
+          "current_discount",
+          "final_price"
         ],
       });
 

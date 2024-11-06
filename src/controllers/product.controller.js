@@ -57,6 +57,14 @@ class ProductController {
       data: await productService.getBySearchQuery(req.query),
     }).send(res);
   }
+
+  async getReviews(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await productService.getReviews(req.params, req.query),
+    }).send(res);
+  }
 }
 
 module.exports = new ProductController();

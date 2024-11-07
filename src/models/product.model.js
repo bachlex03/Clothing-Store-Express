@@ -104,10 +104,22 @@ const productSchema = new Schema(
       type: String,
       enum: ["Draft", "Published", "Scheduled"],
     },
-    product_promotions: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Promotion'
-    }]
+    product_promotion: {
+      type: {
+        promotion_id: {
+          type: Schema.Types.ObjectId,
+          ref: 'Promotion'
+        },
+        current_discount: {
+          type: Number,
+          min: 0,
+          max: 100
+        },
+        start_date: Date,
+        end_date: Date
+      },
+      default: null
+    }
   },
   {
     timestamps: true,
@@ -117,21 +129,19 @@ const productSchema = new Schema(
 
 // Add virtual fields for discount calculation
 productSchema.virtual('current_discount').get(function() {
-  if (!this.product_promotions || !Array.isArray(this.product_promotions)) return 0;
+  if (!this.product_promotion) return 0;
   
   const now = new Date();
-  const activePromotions = this.product_promotions.filter(promo => 
-    promo.promotion_start_date <= now && 
-    promo.promotion_end_date > now
-  );
-
-  return activePromotions.length > 0 
-    ? Math.max(...activePromotions.map(p => p.promotion_value))
-    : 0;
+  if (this.product_promotion.start_date <= now && 
+      this.product_promotion.end_date > now) {
+    return this.product_promotion.current_discount;
+  }
+  return 0;
 });
 
 productSchema.virtual('final_price').get(function() {
-  return Math.ceil(this.product_price * (1 - this.current_discount / 100));
+  const discount = this.current_discount || 0;
+  return Math.ceil(this.product_price * (1 - discount / 100));
 });
 
 // Ensure virtual fields are included

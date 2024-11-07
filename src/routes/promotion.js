@@ -26,18 +26,14 @@ router.use('/', authenticationMiddleware);
  *             type: object
  *             required:
  *               - name
- *               - type
  *               - value
  *               - startDate
  *               - endDate
+ *               - categoryId
  *             properties:
  *               name:
  *                 type: string
  *                 example: "Summer Sale 2024"
- *               type:
- *                 type: string
- *                 enum: [product, category]
- *                 example: "product"
  *               value:
  *                 type: number
  *                 minimum: 0
@@ -51,16 +47,9 @@ router.use('/', authenticationMiddleware);
  *                 type: string
  *                 format: date-time
  *                 example: "2024-06-30T23:59:59.999Z"
- *               appliedProducts:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["product_id_1", "product_id_2"]
- *               appliedCategories:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: []
+ *               categoryId:
+ *                 type: string
+ *                 example: "category_id"
  *     responses:
  *       201:
  *         description: Promotion created successfully
@@ -154,10 +143,10 @@ router.get('/:id',
  *             required:
  *               - id
  *               - name
- *               - type
  *               - value
  *               - startDate
  *               - endDate
+ *               - categoryId
  *             properties:
  *               id:
  *                 type: string
@@ -165,10 +154,6 @@ router.get('/:id',
  *               name:
  *                 type: string
  *                 example: "Summer Sale 2024"
- *               type:
- *                 type: string
- *                 enum: [product, category]
- *                 example: "product"
  *               value:
  *                 type: number
  *                 minimum: 0
@@ -182,16 +167,9 @@ router.get('/:id',
  *                 type: string
  *                 format: date-time
  *                 example: "2024-06-30T23:59:59.999Z"
- *               appliedProducts:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["product_id_1", "product_id_2"]
- *               appliedCategories:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: []
+ *               categoryId:
+ *                 type: string
+ *                 example: "category_id"
  *     responses:
  *       200:
  *         description: Promotion updated successfully

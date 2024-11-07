@@ -173,10 +173,11 @@ const getAll = async () => {
     .find()
     .populate("product_category")
     .populate({
-      path: 'product_promotions',
+      path: 'product_promotion.promotion_id',
+      model: 'Promotion',
       match: {
-        promotion_start_date: { $lte: new Date() },
-        promotion_end_date: { $gt: new Date() }
+        start_date: { $lte: new Date() },
+        end_date: { $gt: new Date() }
       }
     });
 
@@ -191,10 +192,11 @@ const getBySlug = async (params) => {
     .findOne({ product_slug: slug })
     .populate("product_category")
     .populate({
-      path: 'product_promotions',
+      path: 'product_promotion.promotion_id',
+      model: 'Promotion',
       match: {
-        promotion_start_date: { $lte: new Date() },
-        promotion_end_date: { $gt: new Date() }
+        start_date: { $lte: new Date() },
+        end_date: { $gt: new Date() }
       }
     });
 
@@ -244,10 +246,11 @@ const getBySearchQuery = async (query) => {
     })
     .populate("product_category")
     .populate({
-      path: 'product_promotions',
+      path: 'product_promotion.promotion_id',
+      model: 'Promotion',
       match: {
-        promotion_start_date: { $lte: new Date() },
-        promotion_end_date: { $gt: new Date() }
+        start_date: { $lte: new Date() },
+        end_date: { $gt: new Date() }
       }
     });
 
@@ -278,10 +281,11 @@ const getByQueryParam = async (query) => {
       .find()
       .populate("product_category")
       .populate({
-        path: 'product_promotions',
+        path: 'product_promotion.promotion_id',
+        model: 'Promotion',
         match: {
-          promotion_start_date: { $lte: new Date() },
-          promotion_end_date: { $gt: new Date() }
+          start_date: { $lte: new Date() },
+          end_date: { $gt: new Date() }
         }
       });
 

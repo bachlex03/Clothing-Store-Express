@@ -20,10 +20,6 @@ const reviewSchema = new Schema(
             ref: "Invoice",
             required: true,
         },
-        review_date: {
-            type: Date,
-            required: true,
-        },
         review_rating: {
             type: Number,
             min: 1,

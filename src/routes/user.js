@@ -349,9 +349,6 @@ router.get(
  *                 type: string
  *               product_id:
  *                 type: string  
- *               review_date:
- *                 type: string
- *                 format: date-time
  *               review_rating:
  *                 type: integer
  *                 minimum: 1

@@ -569,7 +569,7 @@ const getInvoiceReviews = async (req) => {
       product_category_name: product.product_category?.category_name || null,
       product_review: review ? {
         review_id: review._id,
-        review_date: review.review_date,
+        review_date: review.createdAt,
         review_user: `${review.review_user.user_profile.profile_firstName} ${review.review_user.user_profile.profile_lastName}`,
         review_rating: review.review_rating,
         review_content: review.review_content
@@ -618,12 +618,16 @@ const addProductReview = async (req) => {
     review_user: userId,
     review_product: product_id,
     review_invoice: order_id,
-    review_date,
     review_rating,
     review_content
   });
 
-  return newReview;
+  return {
+    review_id: newReview._id,
+    review_rating: newReview.review_rating,
+    review_content: newReview.review_content,
+    review_date: newReview.createdAt
+  }
 };
 
 const updateProductReview = async (req) => {
@@ -653,7 +657,7 @@ const updateProductReview = async (req) => {
     review_id: review._id,
     review_rating: review.review_rating,
     review_content: review.review_content,
-    review_date: review.review_date
+    review_date: review.createdAt
   };
 };
 

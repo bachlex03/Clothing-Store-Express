@@ -1,17 +1,16 @@
 const promotionModel = require("../models/promotion.model");
 const productModel = require("../models/product.model");
+const categoryModel = require("../models/category.model");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 
 class PromotionService {
   // Create new promotion
   static async createPromotion({
     name,
-    type,
     value,
     startDate,
     endDate,
-    appliedProducts = [],
-    appliedCategories = []
+    categoryId
   }) {
     // Validate dates
     const start = new Date(startDate);
@@ -24,16 +23,19 @@ class PromotionService {
     // Create promotion
     const promotion = await promotionModel.create({
       promotion_name: name,
-      promotion_type: type,
       promotion_value: value,
       promotion_start_date: start,
       promotion_end_date: end,
-      applied_products: appliedProducts,
-      applied_categories: appliedCategories
+      category_id: categoryId
     });
 
-    // Update products' promotions
-    await this.updateProductsPromotions(promotion);
+    // Update category with promotion
+    await categoryModel.findByIdAndUpdate(categoryId, {
+      category_promotion: promotion._id
+    });
+
+    // Update all products in this category
+    await this.updateProductsPromotions(promotion, categoryId);
 
     return promotion;
   }
@@ -124,12 +126,10 @@ class PromotionService {
     const {
       id,
       name,
-      type,
       value,
       startDate,
       endDate,
-      appliedProducts,
-      appliedCategories
+      categoryId
     } = updateData;
 
     // Validate required fields
@@ -152,17 +152,20 @@ class PromotionService {
 
     // Update all fields
     promotion.promotion_name = name;
-    promotion.promotion_type = type;
     promotion.promotion_value = value;
     promotion.promotion_start_date = start;
     promotion.promotion_end_date = end;
-    promotion.applied_products = appliedProducts;
-    promotion.applied_categories = appliedCategories;
+    promotion.category_id = categoryId;
 
     await promotion.save();
 
-    // Update products
-    await this.updateProductsPromotions(promotion);
+    // Update category with promotion
+    await categoryModel.findByIdAndUpdate(categoryId, {
+      category_promotion: promotion._id
+    });
+
+    // Update all products in this category
+    await this.updateProductsPromotions(promotion, categoryId);
 
     // Return updated promotion
     const updatedPromotion = await promotionModel.findById(id);
@@ -185,57 +188,40 @@ class PromotionService {
 
   // Delete promotion
   static async deletePromotion(id) {
-    // Validate id
-    if (!id) {
-      throw new BadRequestError('Promotion ID is required');
-    }
-
-    // Find and delete promotion
     const promotion = await promotionModel.findById(id);
     if (!promotion) {
       throw new NotFoundError('Promotion not found');
     }
 
-    // Remove promotion from all products first
+    // Remove promotion from category
+    await categoryModel.findByIdAndUpdate(promotion.category_id, {
+      category_promotion: null
+    });
+
+    // Remove promotion from all affected products
     await productModel.updateMany(
-      { product_promotions: promotion._id },
-      { $pull: { product_promotions: promotion._id } }
+      { 'product_promotion.promotion_id': promotion._id },
+      { product_promotion: null }
     );
 
-    // Delete the promotion using findByIdAndDelete
     await promotionModel.findByIdAndDelete(id);
-
     return { success: true };
   }
 
   // Update products promotions
-  static async updateProductsPromotions(promotion) {
-    let productsToUpdate = [];
-
-    // Get products from direct application
-    if (promotion.applied_products.length > 0) {
-      productsToUpdate = [...promotion.applied_products];
-    }
-
-    // Get products from categories
-    if (promotion.applied_categories.length > 0) {
-      const categoryProducts = await productModel.find({
-        product_category: { $in: promotion.applied_categories }
-      });
-      productsToUpdate = [...productsToUpdate, ...categoryProducts.map(p => p._id)];
-    }
-
-    // Update each product
-    for (const productId of productsToUpdate) {
-      const product = await productModel.findById(productId);
-      if (!product) continue;
-
-      // Add new promotion if not exists
-      if (!product.product_promotions.includes(promotion._id)) {
-        product.product_promotions.push(promotion._id);
-        await product.save();
+  static async updateProductsPromotions(promotion, categoryId) {
+    // Update all products in the category
+    await productModel.updateMany(
+      { product_category: categoryId },
+      {
+        product_promotion: {
+          promotion_id: promotion._id,
+          current_discount: promotion.promotion_value,
+          start_date: promotion.promotion_start_date,
+          end_date: promotion.promotion_end_date
+        }
       }
-    }
+    );
   }
 
   // Update promotion status

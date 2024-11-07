@@ -20,6 +20,11 @@ const categorySchema = new Schema(
       unique: true,
       index: true,
     },
+    category_promotion: {
+      type: Schema.Types.ObjectId,
+      ref: 'Promotion',
+      default: null
+    },
   },
   {
     timestamps: true,

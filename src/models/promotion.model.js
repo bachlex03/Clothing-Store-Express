@@ -9,13 +9,8 @@ const promotionSchema = new Schema(
       required: true,
       trim: true,
     },
-    promotion_type: {
-      type: String,
-      enum: ["product", "category"],
-      required: true,
-    },
     promotion_value: {
-      type: Number, // Percentage discount
+      type: Number,
       required: true,
       min: 0,
       max: 100,
@@ -28,15 +23,11 @@ const promotionSchema = new Schema(
       type: Date,
       required: true,
     },
-    // References to products or categories this promotion applies to
-    applied_products: [{
+    category_id: {
       type: Schema.Types.ObjectId,
-      ref: "Product"
-    }],
-    applied_categories: [{
-      type: Schema.Types.ObjectId,
-      ref: "Category" 
-    }]
+      ref: "Category",
+      required: true
+    }
   },
   {
     timestamps: true,

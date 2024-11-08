@@ -7,7 +7,9 @@ const profileModel = require("../models/profile.model");
 const addressModel = require("../models/address.model");
 const InvoiceModel = require("../models/invoice.model");
 const { getValueObj } = require("../utils/getValueObj");
+const productModel = require("../models/product.model");
 const bcrypt = require("bcrypt");
+const reviewModel = require("../models/review.model");
 
 const findOneByEmail = async (email) => {
   const user = await userModel.findOne({ email }).lean().exec();
@@ -331,10 +333,17 @@ const updatePassword = async (email, password) => {
 const getInvoices = async (req) => {
   const { email } = req.user;
 
-  const user = await findOneByEmail(email);
+  const user = await userModel
+    .findOne({ email })
+    .populate({
+      path: "user_profile",
+      model: "profile",
+    })
+    .lean()
+    .exec();
 
   if (!user) {
-    throw new BadRequestError("User not found");
+    throw new BadRequestError("User or profile not found");
   }
 
   const results = await InvoiceModel.find({ invoice_user: user._id })
@@ -345,10 +354,40 @@ const getInvoices = async (req) => {
     return [];
   }
 
-  return getValueObj({
-    obj: results,
-    fields: ["invoice_status", "invoice_total", "invoice_products"],
-  });
+  const processedResults = await Promise.all(
+    results.map(async (invoice) => {
+      const { profile_firstName, profile_lastName } = user.user_profile || {};
+      const products = await Promise.all(
+        invoice.invoice_products.map(async (product) => {
+          const dbProduct = await productModel
+            .findById(product._id)
+            .lean()
+            .exec();
+          if (!dbProduct) {
+            throw new Error(`Product not found for ID: ${product._id}`);
+          }
+          return { ...product, slug: dbProduct.product_slug };
+        })
+      );
+      return {
+        ...getValueObj({
+          obj: invoice,
+          fields: [
+            "_id",
+            "createdAt",
+            "invoice_status",
+            "invoice_total",
+            "invoice_products",
+          ],
+        }),
+        invoice_fullname: `${profile_firstName || ""} ${profile_lastName || ""
+          }`,
+        invoice_products: products,
+      };
+    })
+  );
+
+  return processedResults;
 };
 
 const updateVerify = async (email) => {
@@ -477,6 +516,151 @@ const getMember = async (req) => {
   return users;
 };
 
+const getInvoiceReviews = async (req) => {
+  const { orderId } = req.query;
+  const { email } = req.user;
+
+  if (!orderId) {
+    throw new BadRequestError("orderId is required");
+  }
+
+  const user = await userModel.findOne({ email }).lean().exec();
+
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const invoice = await InvoiceModel.findOne({
+    _id: orderId,
+    invoice_user: user._id,
+  }).lean().exec();
+
+  if (!invoice) {
+    throw new BadRequestError("Invoice not found");
+  }
+
+  const productIds = invoice.invoice_products.map(product => product._id);
+
+  const products = await productModel.find({
+    _id: { $in: productIds },
+  }).populate('product_category').lean().exec();
+
+  const reviews = await reviewModel.find({
+    review_invoice: orderId,
+    review_product: { $in: productIds },
+  }).populate({
+    path: 'review_user',
+    populate: {
+      path: 'user_profile',
+      model: 'profile'
+    }
+  }).lean().exec();
+
+  const invoice_products = products.map(product => {
+    const invoiceProduct = invoice.invoice_products.find(p => p._id.toString() === product._id.toString());
+    const review = reviews.find(r => r.review_product.toString() === product._id.toString());
+
+    return {
+      _id: product._id,
+      product_name: product.product_name,
+      product_size: invoiceProduct.product_size,
+      product_color: invoiceProduct.product_color,
+      product_image: product.product_imgs[0]?.secure_url || null,
+      product_category_name: product.product_category?.category_name || null,
+      product_review: review ? {
+        review_id: review._id,
+        review_date: review.createdAt,
+        review_user: `${review.review_user.user_profile.profile_firstName} ${review.review_user.user_profile.profile_lastName}`,
+        review_rating: review.review_rating,
+        review_content: review.review_content
+      } : null
+    };
+  });
+
+  return {
+    invoice_id: invoice._id,
+    invoice_products
+  };
+};
+
+const addProductReview = async (req) => {
+  const { order_id, product_id, review_date, review_rating, review_content } = req.body;
+  const { email } = req.user;
+
+  const user = await userModel.findOne({ email });
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const userId = user._id;
+
+  const invoice = await InvoiceModel.findOne({
+    _id: order_id,
+    invoice_user: userId,
+    'invoice_products._id': product_id
+  });
+
+  if (!invoice) {
+    throw new BadRequestError("Invoice not found or product not in this invoice");
+  }
+
+  const existingReview = await reviewModel.findOne({
+    review_user: userId,
+    review_product: product_id,
+    review_invoice: order_id
+  });
+
+  if (existingReview) {
+    throw new BadRequestError("You have already reviewed this product for this order");
+  }
+
+  const newReview = await reviewModel.create({
+    review_user: userId,
+    review_product: product_id,
+    review_invoice: order_id,
+    review_rating,
+    review_content
+  });
+
+  return {
+    review_id: newReview._id,
+    review_rating: newReview.review_rating,
+    review_content: newReview.review_content,
+    review_date: newReview.createdAt
+  }
+};
+
+const updateProductReview = async (req) => {
+  const { review_id, review_rating, review_content } = req.body;
+  const { email } = req.user;
+
+  const user = await userModel.findOne({ email });
+  if (!user) {
+    throw new BadRequestError("User not found");
+  }
+
+  const review = await reviewModel.findOne({
+    _id: review_id,
+    review_user: user._id
+  });
+
+  if (!review) {
+    throw new BadRequestError("Review not found or unauthorized");
+  }
+
+  review.review_rating = review_rating;
+  review.review_content = review_content;
+
+  await review.save();
+
+  return {
+    review_id: review._id,
+    review_rating: review.review_rating,
+    review_content: review.review_content,
+    review_date: review.createdAt
+  };
+};
+
 module.exports = {
   findOneByEmail,
   createUser,
@@ -495,4 +679,7 @@ module.exports = {
   updateCheckoutInfo,
   createBusinessAccount,
   getMember,
+  getInvoiceReviews,
+  addProductReview,
+  updateProductReview,
 };

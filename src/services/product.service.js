@@ -16,6 +16,7 @@ const cloundinaryService = require("../cloundinary/cloundService");
 const { deleteFile } = require("../utils/handle-os-file");
 const { getValueObj } = require("../utils/getValueObj");
 const Product = require("../entities/product.entity");
+const reviewModel = require("../models/review.model");
 
 const DEFAULT_STATUS = "Draft";
 
@@ -168,9 +169,17 @@ const remove = async (id) => {
 
 // [GET] /api/v1/products
 const getAll = async () => {
-  const products = await productModel.find().populate("product_category");
-
-  console.log("products", products);
+  const products = await productModel
+    .find()
+    .populate("product_category")
+    .populate({
+      path: 'product_promotion.promotion_id',
+      model: 'Promotion',
+      match: {
+        start_date: { $lte: new Date() },
+        end_date: { $gt: new Date() }
+      }
+    });
 
   return products;
 };
@@ -181,7 +190,15 @@ const getBySlug = async (params) => {
 
   let product = await productModel
     .findOne({ product_slug: slug })
-    .populate("product_category");
+    .populate("product_category")
+    .populate({
+      path: 'product_promotion.promotion_id',
+      model: 'Promotion',
+      match: {
+        start_date: { $lte: new Date() },
+        end_date: { $gt: new Date() }
+      }
+    });
 
   if (!product) {
     throw new NotFoundError("Product not found");
@@ -206,7 +223,10 @@ const getBySlug = async (params) => {
     };
   });
 
-  const result = { ...product.toObject(), skus: [...flat] };
+  const result = { 
+    ...product.toObject(), 
+    skus: [...flat]
+  };
 
   return result;
 };
@@ -224,7 +244,15 @@ const getBySearchQuery = async (query) => {
       product_name: { $regex: q, $options: "i" },
       product_slug: { $regex: q, $options: "i" },
     })
-    .populate("product_category");
+    .populate("product_category")
+    .populate({
+      path: 'product_promotion.promotion_id',
+      model: 'Promotion',
+      match: {
+        start_date: { $lte: new Date() },
+        end_date: { $gt: new Date() }
+      }
+    });
 
   return products;
 };
@@ -249,7 +277,17 @@ const getImages = async (params) => {
 // [GET] /api/v1/products?q=
 const getByQueryParam = async (query) => {
   if (query.q === "min") {
-    const products = await productModel.find().populate("product_category");
+    const products = await productModel
+      .find()
+      .populate("product_category")
+      .populate({
+        path: 'product_promotion.promotion_id',
+        model: 'Promotion',
+        match: {
+          start_date: { $lte: new Date() },
+          end_date: { $gt: new Date() }
+        }
+      });
 
     if (!products) {
       throw new NotFoundError("Products not found");
@@ -264,7 +302,7 @@ const getByQueryParam = async (query) => {
           "product_name",
           "product_price",
           "product_imgs",
-          "product_category",
+          "product_category", 
           "product_brand",
           "product_slug",
           "product_status",
@@ -273,6 +311,8 @@ const getByQueryParam = async (query) => {
           "product_colors",
           "product_type",
           "_id",
+          "current_discount",
+          "final_price"
         ],
       });
 
@@ -430,6 +470,65 @@ const validateInfo = (product = Product) => {
   return true;
 };
 
+const getReviews = async (params, query = {}) => {
+  const { slug } = params;
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  // Find product by slug
+  const product = await productModel.findOne({ product_slug: slug });
+  if (!product) {
+    throw new NotFoundError("Product not found");
+  }
+
+  // Get total count for pagination
+  const total = await reviewModel.countDocuments({ review_product: product._id });
+
+  // Get reviews using Mongoose populate
+  const reviews = await reviewModel
+    .find({ review_product: product._id })
+    .populate({
+      path: 'review_user',
+      populate: {
+        path: 'user_profile',
+        model: 'profile',
+        select: 'profile_firstName profile_lastName'
+      }
+    })
+    .select('review_date review_rating review_content')
+    .sort({ review_date: -1 }) // Sort by review_date in descending order
+    .skip(skip)
+    .limit(limit)
+    .lean()
+    .then(reviews => {
+      // Transform data to match required format
+      return reviews.map(review => ({
+        review_id: review._id,
+        review_user: {
+          display_name: `${review.review_user.user_profile.profile_firstName} ${review.review_user.user_profile.profile_lastName}`,
+          image_url: null // Set image_url to null since avatar is not implemented yet
+        },
+        review_date: review.review_date,
+        review_rating: review.review_rating,
+        review_content: review.review_content
+      }));
+    });
+
+  // Calculate total pages
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    data: reviews,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages
+    }
+  };
+};
+
 module.exports = {
   create,
   getAll,
@@ -438,6 +537,7 @@ module.exports = {
   getByQueryParam,
   remove,
   getBySearchQuery,
+  getReviews,
 };
 
 // images = imagesUpload.map((image) => {

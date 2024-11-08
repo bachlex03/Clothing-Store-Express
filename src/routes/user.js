@@ -308,3 +308,97 @@ router.get(
   grantAccess("readAny", "users"),
   ErrorHandler(userController.getMember)
 );
+
+/**
+ * @swagger
+ * /api/v1/users/invoices/reviews:
+ *   get:
+ *     tags: [User]
+ *     parameters:
+ *       - in: query
+ *         name: orderId
+ *         required: true
+ *         type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get(
+  '/invoices/reviews',
+  grantAccess("readOwn", "users"),
+  ErrorHandler(userController.getInvoiceReviews)
+);
+
+/**
+ * @swagger
+ * /api/v1/users/invoices/reviews:
+ *   post:
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               order_id:
+ *                 type: string
+ *               product_id:
+ *                 type: string  
+ *               review_rating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               review_content:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.post(
+  '/invoices/reviews',
+  // grantAccess("createOwn", "reviews"),
+  ErrorHandler(userController.addProductReview)
+);
+
+/**
+ * @swagger
+ * /api/v1/users/invoices/reviews:
+ *   put:
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               review_id:
+ *                 type: string
+ *               review_rating:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               review_content:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.put(
+  '/invoices/reviews',
+  // grantAccess("updateOwn", "reviews"),
+  ErrorHandler(userController.updateProductReview)
+);

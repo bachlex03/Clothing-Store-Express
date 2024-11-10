@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const promotionController = require('../controllers/promotion.controller');
-const { authenticationMiddleware } = require('../middlewares/auth.middleware');
-const { grantAccess } = require('../middlewares/rbac.middleware');
-const ErrorHandler = require('../utils/catchError');
+const promotionController = require("../controllers/promotion.controller");
+const { authenticationMiddleware } = require("../middlewares/auth.middleware");
+const { grantAccess } = require("../middlewares/rbac.middleware");
+const ErrorHandler = require("../utils/catchError");
 
 /**
  * @swagger
@@ -11,7 +11,7 @@ const ErrorHandler = require('../utils/catchError');
  *  name: Promotions
  */
 
-router.use('/', authenticationMiddleware);
+router.use("/", authenticationMiddleware);
 
 /**
  * @swagger
@@ -54,7 +54,8 @@ router.use('/', authenticationMiddleware);
  *       201:
  *         description: Promotion created successfully
  */
-router.post('/',
+router.post(
+  "/",
   // grantAccess('createAny', 'promotion'),
   ErrorHandler(promotionController.createPromotion)
 );
@@ -101,7 +102,8 @@ router.post('/',
  *       200:
  *         description: List of promotions
  */
-router.get('/',
+router.get(
+  "/",
   // grantAccess('readAny', 'promotion'),
   ErrorHandler(promotionController.getPromotions)
 );
@@ -124,7 +126,8 @@ router.get('/',
  *       404:
  *         description: Promotion not found
  */
-router.get('/:id',
+router.get(
+  "/:id",
   // grantAccess('readAny', 'promotion'),
   ErrorHandler(promotionController.getPromotionById)
 );
@@ -176,7 +179,8 @@ router.get('/:id',
  *       404:
  *         description: Promotion not found
  */
-router.put('/',
+router.put(
+  "/",
   // grantAccess('updateAny', 'promotion'),
   ErrorHandler(promotionController.updatePromotion)
 );
@@ -199,9 +203,10 @@ router.put('/',
  *       404:
  *         description: Promotion not found
  */
-router.delete('/:id',
+router.delete(
+  "/:id",
   // grantAccess('deleteAny', 'promotion'),
   ErrorHandler(promotionController.deletePromotion)
 );
 
-module.exports = router; 
+module.exports = router;

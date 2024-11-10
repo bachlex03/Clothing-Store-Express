@@ -161,7 +161,7 @@ router.use("/", authenticationMiddleware);
 router.post(
   "/",
   grantAccess("createAny", "products"),
-  uploadMiddleware.array("images", 10),
+  uploadMiddleware.array("images", 5),
   ErrorHandler(productController.create)
 );
 

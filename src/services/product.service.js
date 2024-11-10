@@ -12,7 +12,7 @@ const {
   genderArr,
 } = require("../common/enum");
 const generateProductCode = require("../utils/generate-product-code");
-const cloundinaryService = require("../cloundinary/cloundService");
+const cloudinaryService = require("../cloudinary/cloudService");
 const { deleteFile } = require("../utils/handle-os-file");
 const { getValueObj } = require("../utils/getValueObj");
 const Product = require("../entities/product.entity");
@@ -72,10 +72,10 @@ const create = async (req) => {
 
   let saveImages = [];
 
-  // Upload images to cloundinary
+  // Upload images to cloudinary
   if (product.images) {
     for (let i = 0; i < product.images.length; i++) {
-      const result = await cloundinaryService.uploadImage(
+      const result = await cloudinaryService.uploadSingle(
         product.images[i].path
       );
 
@@ -144,7 +144,7 @@ const create = async (req) => {
       session.endSession();
 
       // saveImages.forEach(async (image) => {
-      //   const response = await cloundinaryService.deleteImage(image.public_id);
+      //   const response = await cloudinaryService.deleteImage(image.public_id);
       // });
 
       throw new BadRequestError(err.message);
@@ -173,12 +173,12 @@ const getAll = async () => {
     .find()
     .populate("product_category")
     .populate({
-      path: 'product_promotion.promotion_id',
-      model: 'Promotion',
+      path: "product_promotion.promotion_id",
+      model: "Promotion",
       match: {
         start_date: { $lte: new Date() },
-        end_date: { $gt: new Date() }
-      }
+        end_date: { $gt: new Date() },
+      },
     });
 
   return products;
@@ -192,12 +192,12 @@ const getBySlug = async (params) => {
     .findOne({ product_slug: slug })
     .populate("product_category")
     .populate({
-      path: 'product_promotion.promotion_id',
-      model: 'Promotion',
+      path: "product_promotion.promotion_id",
+      model: "Promotion",
       match: {
         start_date: { $lte: new Date() },
-        end_date: { $gt: new Date() }
-      }
+        end_date: { $gt: new Date() },
+      },
     });
 
   if (!product) {
@@ -223,9 +223,9 @@ const getBySlug = async (params) => {
     };
   });
 
-  const result = { 
-    ...product.toObject(), 
-    skus: [...flat]
+  const result = {
+    ...product.toObject(),
+    skus: [...flat],
   };
 
   return result;
@@ -246,12 +246,12 @@ const getBySearchQuery = async (query) => {
     })
     .populate("product_category")
     .populate({
-      path: 'product_promotion.promotion_id',
-      model: 'Promotion',
+      path: "product_promotion.promotion_id",
+      model: "Promotion",
       match: {
         start_date: { $lte: new Date() },
-        end_date: { $gt: new Date() }
-      }
+        end_date: { $gt: new Date() },
+      },
     });
 
   return products;
@@ -281,12 +281,12 @@ const getByQueryParam = async (query) => {
       .find()
       .populate("product_category")
       .populate({
-        path: 'product_promotion.promotion_id',
-        model: 'Promotion',
+        path: "product_promotion.promotion_id",
+        model: "Promotion",
         match: {
           start_date: { $lte: new Date() },
-          end_date: { $gt: new Date() }
-        }
+          end_date: { $gt: new Date() },
+        },
       });
 
     if (!products) {
@@ -302,7 +302,7 @@ const getByQueryParam = async (query) => {
           "product_name",
           "product_price",
           "product_imgs",
-          "product_category", 
+          "product_category",
           "product_brand",
           "product_slug",
           "product_status",
@@ -312,7 +312,7 @@ const getByQueryParam = async (query) => {
           "product_type",
           "_id",
           "current_discount",
-          "final_price"
+          "final_price",
         ],
       });
 
@@ -483,35 +483,37 @@ const getReviews = async (params, query = {}) => {
   }
 
   // Get total count for pagination
-  const total = await reviewModel.countDocuments({ review_product: product._id });
+  const total = await reviewModel.countDocuments({
+    review_product: product._id,
+  });
 
   // Get reviews using Mongoose populate
   const reviews = await reviewModel
     .find({ review_product: product._id })
     .populate({
-      path: 'review_user',
+      path: "review_user",
       populate: {
-        path: 'user_profile',
-        model: 'profile',
-        select: 'profile_firstName profile_lastName'
-      }
+        path: "user_profile",
+        model: "profile",
+        select: "profile_firstName profile_lastName",
+      },
     })
-    .select('review_date review_rating review_content')
+    .select("review_date review_rating review_content")
     .sort({ review_date: -1 }) // Sort by review_date in descending order
     .skip(skip)
     .limit(limit)
     .lean()
-    .then(reviews => {
+    .then((reviews) => {
       // Transform data to match required format
-      return reviews.map(review => ({
+      return reviews.map((review) => ({
         review_id: review._id,
         review_user: {
           display_name: `${review.review_user.user_profile.profile_firstName} ${review.review_user.user_profile.profile_lastName}`,
-          image_url: null // Set image_url to null since avatar is not implemented yet
+          image_url: null, // Set image_url to null since avatar is not implemented yet
         },
         review_date: review.review_date,
         review_rating: review.review_rating,
-        review_content: review.review_content
+        review_content: review.review_content,
       }));
     });
 
@@ -524,8 +526,8 @@ const getReviews = async (params, query = {}) => {
       total,
       page,
       limit,
-      totalPages
-    }
+      totalPages,
+    },
   };
 };
 

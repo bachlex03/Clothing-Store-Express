@@ -41,7 +41,7 @@ const cloudinary = require("./config/config.cloundinary");
 
 // socket.io
 
-global._io.on("connection", SocketService.connection);
+// global._io.on("connection", SocketService.connection);
 
 // config handlebars
 const { engine: handlebars } = require("express-handlebars");

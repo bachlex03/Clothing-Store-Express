@@ -100,4 +100,62 @@ router.post(
   ErrorHandler(categoryController.create)
 );
 
+/**
+ * @swagger
+ * /api/v1/categories/{id}:
+ *  put:
+ *   tags: [Categories]
+ *   parameters:
+ *    - name: id
+ *      in: path
+ *      required: true
+ *      schema:
+ *        type: string
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         name:
+ *          type: string
+ *         parentId:
+ *          type: string
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.put("/:id", ErrorHandler(categoryController.update));
+
+/**
+ * @swagger
+ * /api/v1/categories/{id}:
+ *   delete:
+ *     tags: [Categories]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the product
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.delete(
+  "/:id",
+  // grantAccess("deleteAny", "products"),
+  ErrorHandler(categoryController.remove)
+);
+
 module.exports = router;

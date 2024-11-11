@@ -38,10 +38,6 @@ const create = async (req) => {
     status = "Draft",
   } = req.body;
 
-  // console.log("req.body", req.body);
-
-  images = req.files;
-
   // generate product code
   const code = generateProductCode({ brand, category: category, gender });
 
@@ -70,21 +66,6 @@ const create = async (req) => {
     throw new BadRequestError(err.message);
   }
 
-  let saveImages = [];
-
-  // Upload images to cloudinary
-  if (product.images) {
-    for (let i = 0; i < product.images.length; i++) {
-      const result = await cloudinaryService.uploadSingle(
-        product.images[i].path
-      );
-
-      saveImages.push(result);
-
-      deleteFile(product.images[i].path);
-    }
-  }
-
   // Start transaction
   const mongo = Database.getInstance();
   let session = await mongo.startSession();
@@ -106,7 +87,7 @@ const create = async (req) => {
         product_stocks: parseInt(product.quantity),
       },
       product_price: product.price,
-      product_imgs: saveImages ? saveImages : [],
+      product_imgs: product.images,
       product_status: product.status,
     };
 
@@ -152,6 +133,33 @@ const create = async (req) => {
   });
 
   return Promise.all(products);
+};
+
+// [PUT] /api/v1/products/:id
+const update = async (id, body) => {
+  const { name, description, price, categoryId, type, brand, status, gender } =
+    body;
+
+  if (!id) throw new BadRequestError("Product id is required");
+
+  const product = await productModel.findById(id);
+
+  if (!product) {
+    throw new NotFoundError("Product not found");
+  }
+
+  product.product_name = name || product.product_name;
+  product.product_description = description || product.product_description;
+  product.product_price = price || product.product_price;
+  product.product_category = categoryId || product.product_category;
+  product.product_type = type || product.product_type;
+  product.product_brand = brand || product.product_brand;
+  product.product_status = status || product.product_status;
+  product.product_gender = gender || product.product_gender;
+
+  await product.save();
+
+  return product;
 };
 
 // [DELETE] /api/v1/products/:id
@@ -457,16 +465,6 @@ const validateInfo = (product = Product) => {
     throw new BadRequestError("Product images is required");
   }
 
-  // // Check status value
-  // if (!statusEnum.includes(product.status)) {
-  //   product.status = DEFAULT_STATUS;
-  // }
-
-  // // Check status value
-  // if (!genderArr.includes(product.gender)) {
-  //   product.gender = GenderEnum.UNISEX;
-  // }
-
   return true;
 };
 
@@ -540,6 +538,7 @@ module.exports = {
   remove,
   getBySearchQuery,
   getReviews,
+  update,
 };
 
 // images = imagesUpload.map((image) => {

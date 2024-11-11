@@ -10,6 +10,14 @@ class ProductController {
     }).send(res);
   }
 
+  async update(req, res) {
+    new OK({
+      message: "Update successfully",
+      statusCode: 200,
+      data: await productService.update(req.params.id, req.body),
+    }).send(res);
+  }
+
   async remove(req, res) {
     new OK({
       message: "Remove successfully",

@@ -127,6 +127,15 @@ router.get("/:slug/images", ErrorHandler(productController.getImages));
  *         brand:
  *          type: string
  *          default: "Louis Vuitton"
+ *         images:
+ *          type: array
+ *          items:
+ *            type: object
+ *            properties:
+ *              secure_url:
+ *                type: string
+ *              public_id:
+ *                type: string
  *         categoryId:
  *          type: string
  *          default: "664359e535e84033bbd0e6f9"
@@ -161,9 +170,58 @@ router.use("/", authenticationMiddleware);
 router.post(
   "/",
   grantAccess("createAny", "products"),
-  uploadMiddleware.array("images", 5),
   ErrorHandler(productController.create)
 );
+
+/**
+ * @swagger
+ * /api/v1/products/{id}:
+ *  put:
+ *   tags: [Products]
+ *   parameters:
+ *    - name: id
+ *      in: path
+ *      required: true
+ *      schema:
+ *        type: string
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         name:
+ *          type: string
+ *         description:
+ *          type: string
+ *         gender:
+ *          type: string
+ *          default: "Unisex"
+ *         type:
+ *          type: string
+ *          default: "Clothe"
+ *         brand:
+ *          type: string
+ *          default: "Louis Vuitton"
+ *         categoryId:
+ *          type: string
+ *          default: "664359e535e84033bbd0e6f9"
+ *         quantity:
+ *          type: string
+ *          example: "20"
+ *         status:
+ *          type: string
+ *          example: "Draft"
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.put("/:id", ErrorHandler(productController.update));
 
 /**
  * @swagger
@@ -187,7 +245,7 @@ router.post(
  */
 router.delete(
   "/:id",
-  grantAccess("deleteAny", "products"),
+  // grantAccess("deleteAny", "products"),
   ErrorHandler(productController.remove)
 );
 

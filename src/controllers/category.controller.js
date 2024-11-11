@@ -10,6 +10,22 @@ class CategoryController {
     }).send(res);
   }
 
+  async update(req, res) {
+    new OK({
+      message: "Update successfully",
+      statusCode: 200,
+      data: await categoryService.update(req.params.id, req.body),
+    }).send(res);
+  }
+
+  async remove(req, res) {
+    new OK({
+      message: "Remove successfully",
+      statusCode: 200,
+      data: await categoryService.remove(req.params.id),
+    }).send(res);
+  }
+
   async getAll(req, res) {
     new CREATED({
       message: "OK",

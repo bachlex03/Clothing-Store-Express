@@ -5,6 +5,9 @@ const {
 } = require("../config/config.env");
 
 const CONNECTION_STR = `mongodb://${host}:${port}/${name}`;
+console.warn("host::", host);
+console.warn("port::", port);
+console.warn("name::", name);
 
 class Database {
   instance = null;
@@ -14,6 +17,8 @@ class Database {
   }
 
   static async connect(type = "mongodb") {
+    console.warn("CONNECTION_STR::", CONNECTION_STR);
+
     await mongoose
       .connect(CONNECTION_STR, { maxPoolSize: 50 })
       .then((connection) => {

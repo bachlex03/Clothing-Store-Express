@@ -1,12 +1,37 @@
-version: "3"
+# version: "3"
+
 services:
   redis:
-    image: redislabs/redismod
+    image: redis:alpine
+    container_name: redis
     ports:
       - 6379:6379
-  redisinsight:
-    image: redislabs/redisinsight:latest
-    ports:
-      - "8001:8001"
     volumes:
-      - /Users/bale/Documents/Workspace/NodeJS/clothing-store-backend/data:/db
+      - redis-data:/data
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - 37017:27017
+    volumes:
+      - mongodb-data:/data/db
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chani-server
+    ports:
+      - 3001:3001
+    depends_on:
+      - redis
+      - mongodb
+
+volumes:
+  redis-data:
+    name: redis-data
+    driver: local
+  mongodb-data:
+    name: mongodb-data
+    driver: local

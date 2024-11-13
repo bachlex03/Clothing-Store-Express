@@ -5,6 +5,8 @@ const {
 } = require("../config/config.env");
 
 const CONNECTION_STR = `mongodb://${host}:${port}/${name}`;
+// const CONNECTION_STR = `mongodb+srv://chani:MdamxFGAGqHGCREe@chani-store.j28z8.mongodb.net/Clothing_DEV?retryWrites=true&w=majority&appName=chani-store`;
+
 console.warn("host::", host);
 console.warn("port::", port);
 console.warn("name::", name);

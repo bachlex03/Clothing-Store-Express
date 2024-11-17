@@ -27,5 +27,6 @@ module.exports = {
     tmnCode: process.env.VN_PAY_TMN_CODE,
     hashSecret: process.env.VN_PAY_HASH_SECRET,
     vnpUrl: process.env.VN_PAY_URL_PAYMENT,
+    clientReturnUrl: process.env.VN_PAY_RETURN_CLIENT_URL,
   },
 };

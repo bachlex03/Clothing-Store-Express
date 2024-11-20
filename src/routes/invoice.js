@@ -26,15 +26,13 @@ const invoiceController = require("../controllers/invoice.controller");
 //  */
 // router.get("/currentUser", ErrorHandler(invoiceController.getByUserEmail));
 
-// router.use("/", authenticationMiddleware);
+router.use("/", authenticationMiddleware);
 
 /**
  * @swagger
  * /api/v1/invoices:
  *   get:
  *     tags: [Invoices]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page

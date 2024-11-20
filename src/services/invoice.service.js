@@ -62,7 +62,42 @@ const getByUserEmail = async (email) => {
   return invoices;
 };
 
+const getAllInvoices = async ({ page = 1, limit = 10 }) => {
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  const invoices = await invoiceModel.find()
+    .populate({
+      path: 'invoice_user',
+      select: 'email user_profile',
+      populate: {
+        path: 'user_profile',
+        select: 'profile_firstName profile_lastName profile_phoneNumber profile_address',
+        populate: {
+          path: 'profile_address',
+          select: 'address_country address_province address_district address_addressLine'
+        }
+      }
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parseInt(limit))
+    .lean()
+    .exec();
+
+  const total = await invoiceModel.countDocuments();
+
+  return {
+    invoices,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total
+    }
+  };
+};
+
 module.exports = {
   create,
   getByUserEmail,
+  getAllInvoices,
 };

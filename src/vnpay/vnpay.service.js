@@ -14,10 +14,46 @@ const {
 } = require("../config/config.env");
 const sortObjectParamsVnpay = require("../utils/sortObjectParamsVnpay");
 
-const createPaymentUrl = () => {
-  const vnpayUrl = vnpayParamsBuilder();
+const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
+  try {
+    // Validate amount
+    if (!amount || isNaN(amount)) {
+      throw new Error("Amount must be a number");
+    }
 
-  return vnpayUrl;
+    // Build VNPay parameters with amount
+    const vnpayUrl = vnpayParamsBuilder(amount);
+
+    // Setup payment success handler
+    global._paymentEvent.on("payment-success", async (data) => {
+      try {
+        // Reduce inventory quantities
+        await inventoryService.reduceQuantity(boughtItems);
+        
+        // Update invoice status
+        invoice.setStatus("paid");
+        
+        // Create invoice record
+        await invoiceService.create({
+          user_id: invoice.user,
+          status: invoice.status,
+          total: invoice.total,
+          boughtProducts: invoice.products,
+          note: invoice.note,
+        });
+
+        return data;
+      } catch (error) {
+        console.error("Payment success handler error:", error);
+        throw error;
+      }
+    });
+
+    return vnpayUrl;
+  } catch (error) {
+    console.error("Create payment URL error:", error);
+    throw error;
+  }
 };
 
 // const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
@@ -152,53 +188,52 @@ const vnpayReturn = async (req) => {
   }
 };
 
-const vnpayParamsBuilder = () => {
-  const expireDate = dayjs()
-    .tz("Asia/Ho_Chi_Minh")
-    .add(1, "day")
-    .format("YYYYMMDDHHmmss");
+const vnpayParamsBuilder = (amount) => {
+  try {
+    // Convert amount to integer string
+    amount = parseInt(amount).toString();
 
-  const createDate = dayjs().tz("Asia/Ho_Chi_Minh").format("YYYYMMDDHHmmss");
-  let VNPAY_URL = vnpUrl;
-  var ipAddr = "13.160.92.202";
-  var info = "Thanh toan don hang";
-  var amount = 1000000;
-  var RETURN_CLIENT_URL = clientReturnUrl;
-  const VNPAY_TMN_CODE = tmnCode;
-  const VNPAY_HASH_SECRET = hashSecret;
+    const createDate = dayjs().tz("Asia/Ho_Chi_Minh").format("YYYYMMDDHHmmss");
+    let VNPAY_URL = vnpUrl;
+    const ipAddr = "13.160.92.202";
+    const info = "Thanh toan don hang";
+    const RETURN_CLIENT_URL = clientReturnUrl;
 
-  var vnp_Params = {};
-  vnp_Params["vnp_Version"] = "2.1.0";
-  vnp_Params["vnp_Command"] = "pay";
-  vnp_Params["vnp_TmnCode"] = VNPAY_TMN_CODE;
-  vnp_Params["vnp_Locale"] = "vn";
-  vnp_Params["vnp_CurrCode"] = "VND";
-  vnp_Params["vnp_TxnRef"] = Date.now().toString();
-  vnp_Params["vnp_OrderInfo"] = "account_id " + info;
-  vnp_Params["vnp_OrderType"] = "bill payment";
-  vnp_Params["vnp_Amount"] = amount * 100;
-  vnp_Params["vnp_ReturnUrl"] = RETURN_CLIENT_URL;
-  vnp_Params["vnp_IpAddr"] = ipAddr;
-  vnp_Params["vnp_CreateDate"] = createDate;
-  // vnp_Params['vnp_BankCode'] = 'NCB';
+    // Build VNPay parameters
+    const vnp_Params = {
+      vnp_Version: "2.1.0",
+      vnp_Command: "pay",
+      vnp_TmnCode: tmnCode,
+      vnp_Locale: "vn",
+      vnp_CurrCode: "VND",
+      vnp_TxnRef: Date.now().toString(),
+      vnp_OrderInfo: "account_id " + info,
+      vnp_OrderType: "bill payment",
+      vnp_Amount: amount * 100,
+      vnp_ReturnUrl: RETURN_CLIENT_URL,
+      vnp_IpAddr: ipAddr,
+      vnp_CreateDate: createDate
+    };
 
-  vnp_Params = sortObjectParamsVnpay(vnp_Params);
+    // Sort parameters
+    const sortedParams = sortObjectParamsVnpay(vnp_Params);
 
-  var querystring = require("qs");
+    // Create signature
+    const signData = require("qs").stringify(sortedParams, { encode: false });
+    const hmac = crypto.createHmac("sha512", hashSecret);
+    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
-  var signData = querystring.stringify(vnp_Params, { encode: false });
+    // Add signature
+    sortedParams["vnp_SecureHash"] = signed;
 
-  var crypto = require("crypto");
+    // Create final URL
+    const finalUrl = `${VNPAY_URL}?${require("qs").stringify(sortedParams, { encode: false })}`;
 
-  var hmac = crypto.createHmac("sha512", VNPAY_HASH_SECRET);
-
-  var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-
-  vnp_Params["vnp_SecureHash"] = signed;
-
-  vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
-
-  return vnpUrl;
+    return finalUrl;
+  } catch (error) {
+    console.error("VNPay params builder error:", error);
+    throw error;
+  }
 };
 
 module.exports = {

@@ -215,6 +215,13 @@ class AccessService {
   async recover(body) {
     const { email } = body;
 
+    // 1. check exist user
+    const existUser = await findOneByEmail(email);
+
+    if (!existUser) {
+      throw new BadRequestError("User not found");
+    }
+
     // 3. generate tokens
     const payload = {
       email,

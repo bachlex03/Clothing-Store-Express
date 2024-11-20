@@ -82,7 +82,7 @@ app.use(passport.initialize());
 const Database = require("./db/mongo.config");
 Database.connect();
 const redis = require("./db/redis.config");
-// redis.initRedis();
+redis.initRedis();
 
 // Init routes
 const router = require("./routes");

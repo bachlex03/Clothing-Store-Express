@@ -146,10 +146,15 @@ const getProductsByCategory = async (params) => {
     categoryIds.push(child._id);
   });
 
-  // Lấy sản phẩm từ tất cả categories
-  const products = await productModel.find({
-    product_category: { $in: categoryIds },
-  });
+  // Lấy sản phẩm từ tất cả categories và populate thông tin category
+  const products = await productModel
+    .find({
+      product_category: { $in: categoryIds },
+    })
+    .populate({
+      path: "product_category",
+      select: "category_name category_slug",
+    });
 
   return products;
 };

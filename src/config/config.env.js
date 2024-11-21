@@ -22,6 +22,7 @@ module.exports = {
   },
   website: {
     url: process.env.REACT_URL,
+    clientUrl: process.env.CLIENT_URL,
   },
   vnpay: {
     tmnCode: process.env.VN_PAY_TMN_CODE,

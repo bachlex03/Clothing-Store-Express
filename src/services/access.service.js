@@ -60,12 +60,20 @@ class AccessService {
 
     const { email, firstName } = decodedToken;
 
-    const token = await sendEmail({
+    // const token = await sendEmail({
+    //   to: email,
+    //   name: firstName,
+    // });
+
+    const randomToken = Math.floor(100000 + Math.random() * 900000);
+
+    await sendEmail({
       to: email,
       name: firstName,
-    });
+      mailToken: randomToken,
+    }); 
 
-    await RedisService.set(`${email}:token`, token);
+    await RedisService.set(`${email}:token`, randomToken);
 
     return {
       message: "Sended !",
@@ -229,7 +237,7 @@ class AccessService {
 
     const token = generateMailToken(payload);
 
-    const resetUrl = `${process.env.REACT_URL}/reset-password?q=${token}`;
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?q=${token}`;
 
     sendResetPassword({
       to: email,

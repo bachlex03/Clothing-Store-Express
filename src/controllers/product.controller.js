@@ -73,6 +73,30 @@ class ProductController {
       data: await productService.getReviews(req.params, req.query),
     }).send(res);
   }
+
+  async getNewArrivals(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await productService.getNewArrivals(req.query.limit),
+    }).send(res);
+  }
+
+  async getOnSaleProducts(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await productService.getOnSaleProducts(req.query.limit),
+    }).send(res);
+  }
+
+  async getBestSellers(req, res) {
+    new OK({
+      message: "OK",
+      statusCode: 200,
+      data: await productService.getBestSellers(req.query.limit),
+    }).send(res);
+  }
 }
 
 module.exports = new ProductController();

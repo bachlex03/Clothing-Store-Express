@@ -23,6 +23,60 @@ const productController = require("../controllers/product.controller");
 
 /**
  * @swagger
+ * /api/v1/products/new-arrivals:
+ *   get:
+ *     summary: Get new arrival products
+ *     tags: [Products]
+ *     parameters:
+ *     - in: query
+ *       name: limit
+ *       type: number
+ *       description: Limit number of products
+ *       default: 10
+ *     responses:
+ *       200:
+ *         description: Get new arrivals successfully
+ */
+router.get("/new-arrivals", ErrorHandler(productController.getNewArrivals));
+
+/**
+ * @swagger
+ * /api/v1/products/best-sellers:
+ *   get:
+ *     summary: Get best selling products
+ *     tags: [Products]
+ *     parameters:
+ *     - in: query
+ *       name: limit
+ *       type: number
+ *       description: Limit number of products
+ *       default: 10
+ *     responses:
+ *       200:
+ *         description: Get best sellers successfully
+ */
+router.get("/best-sellers", ErrorHandler(productController.getBestSellers));
+
+/**
+ * @swagger
+ * /api/v1/products/on-sale:
+ *   get:
+ *     summary: Get products on sale
+ *     tags: [Products]
+ *     parameters:
+ *     - in: query
+ *       name: limit
+ *       type: number
+ *       description: Limit number of products
+ *       default: 10
+ *     responses:
+ *       200:
+ *         description: Get products on sale successfully
+ */
+router.get("/on-sale", ErrorHandler(productController.getOnSaleProducts));
+
+/**
+ * @swagger
  * /api/v1/products/search?q={q}:
  *   get:
  *     tags: [Products]

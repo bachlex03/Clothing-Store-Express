@@ -16,24 +16,15 @@ const sortObjectParamsVnpay = require("../utils/sortObjectParamsVnpay");
 
 const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
   try {
-    // Validate amount
     if (!amount || isNaN(amount)) {
       throw new Error("Amount must be a number");
     }
 
-    // Build VNPay parameters with amount
-    const vnpayUrl = vnpayParamsBuilder(amount);
-
-    // Setup payment success handler
-    global._paymentEvent.on("payment-success", async (data) => {
+    // Tạo handler cho payment success
+    const paymentSuccessHandler = async (data) => {
       try {
-        // Reduce inventory quantities
         await inventoryService.reduceQuantity(boughtItems);
-        
-        // Update invoice status
         invoice.setStatus("paid");
-        
-        // Create invoice record
         await invoiceService.create({
           user_id: invoice.user,
           status: invoice.status,
@@ -41,15 +32,20 @@ const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
           boughtProducts: invoice.products,
           note: invoice.note,
         });
-
         return data;
       } catch (error) {
         console.error("Payment success handler error:", error);
         throw error;
+      } finally {
+        // Remove handler sau khi xử lý xong
+        global._paymentEvent.removeListener("payment-success", paymentSuccessHandler);
       }
-    });
+    };
 
-    return vnpayUrl;
+    // Đăng ký handler
+    global._paymentEvent.once("payment-success", paymentSuccessHandler);
+
+    return vnpayParamsBuilder(amount);
   } catch (error) {
     console.error("Create payment URL error:", error);
     throw error;
@@ -123,39 +119,43 @@ const createPaymentUrl = async (amount, boughtItems, invoice = {}) => {
 // };
 
 const vnpayIpn = async (req) => {
-  const secureHash = req.query.vnp_SecureHash;
-  const secureHashType = req.query.vnp_SecureHashType;
-  const responseCode = req.query.vnp_ResponseCode;
-  const vnp_Params = req.query;
+  try {
+    const secureHash = req.query.vnp_SecureHash;
+    const responseCode = req.query.vnp_ResponseCode;
+    const vnp_Params = { ...req.query };
 
-  // console.log("req.query", req.query);
+    delete vnp_Params.vnp_SecureHash;
+    delete vnp_Params.vnp_SecureHashType;
 
-  delete vnp_Params.vnp_SecureHash;
-  delete vnp_Params.vnp_SecureHashType;
+    const signData = new URLSearchParams(vnp_Params).toString();
+    const hmac = crypto.createHmac("sha512", hashSecret);
+    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
-  const signData = new URLSearchParams(vnp_Params).toString();
-  const hmac = crypto.createHmac("sha512", hashSecret);
+    if (secureHash === signed && responseCode === "00") {
+      const data = {
+        RspCode: "00",
+        message: "Payment success",
+      };
 
-  var signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+      // Emit event và đợi xử lý xong
+      await new Promise(resolve => {
+        global._paymentEvent.emit("payment-success", data);
+        resolve();
+      });
 
-  let data;
+      return data;
+    }
 
-  if (secureHash === signed && responseCode === "00") {
-    data = {
-      RspCode: "00",
-      message: "Payment success",
-    };
-
-    global._paymentEvent.emit("payment-success", data);
-
-    return data;
-  } else {
-    data = {
+    return {
       RspCode: "97",
       message: "Fail checksum",
     };
-
-    return data;
+  } catch (error) {
+    console.error("VNPay IPN Error:", error);
+    return {
+      RspCode: "99",
+      message: "Unknown error"
+    };
   }
 };
 

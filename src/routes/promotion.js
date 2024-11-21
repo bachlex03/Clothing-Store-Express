@@ -81,12 +81,6 @@ router.post(
  *           default: 10
  *         description: Number of items per page
  *       - in: query
- *         name: type
- *         schema:
- *           type: string
- *           enum: [product, category]
- *         description: Filter by promotion type
- *       - in: query
  *         name: startDate
  *         schema:
  *           type: string

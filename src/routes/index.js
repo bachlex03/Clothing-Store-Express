@@ -13,6 +13,7 @@ const rbacRouter = require("./rbac");
 const promotionRouter = require("./promotion");
 const uploadRouter = require("./upload");
 const invoiceRouter = require("./invoice");
+const adminRouter = require("./admin");
 
 router.use("/api/v1/upload", uploadRouter);
 router.use("/api/v1/auth", accessRouter);
@@ -24,4 +25,6 @@ router.use("/api/v1/vnpay", vnpayRouter);
 router.use("/api/v1/rbac", rbacRouter);
 router.use("/api/v1/promotions", promotionRouter);
 router.use("/api/v1/invoices", invoiceRouter);
+router.use("/api/v1/admin", adminRouter);
+
 module.exports = router;

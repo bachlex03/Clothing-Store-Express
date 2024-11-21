@@ -44,7 +44,6 @@ class PromotionService {
   static async getPromotions({ 
     page = 1, 
     limit = 10, 
-    type,
     startDate,
     endDate 
   }) {
@@ -52,33 +51,40 @@ class PromotionService {
     
     // Build query
     let query = {};
-    if (type) query.promotion_type = type;
     if (startDate) query.promotion_start_date = { $gte: new Date(startDate) };
     if (endDate) query.promotion_end_date = { $lte: new Date(endDate) };
 
     // Get total count
     const total = await promotionModel.countDocuments(query);
 
-    // Get promotions
+    // Get promotions with populated category
     const promotions = await promotionModel.find(query)
+      .populate({
+        path: 'category_id',
+        select: 'category_name category_parentId category_slug',
+        model: 'Category'
+      })
       .sort({ promotion_end_date: -1 })
       .skip(skip)
       .limit(limit);
 
-    // Transform data
+    // Transform data with category info
     const transformedPromotions = promotions.map(promotion => {
       const promotionObj = promotion.toObject({ virtuals: true });
-      
+            
       return {
         _id: promotionObj._id,
         promotion_name: promotionObj.promotion_name,
-        promotion_type: promotionObj.promotion_type,
         promotion_value: promotionObj.promotion_value,
         promotion_start_date: promotionObj.promotion_start_date,
         promotion_end_date: promotionObj.promotion_end_date,
         is_active: promotionObj.is_active,
-        applied_products: promotionObj.applied_products,
-        applied_categories: promotionObj.applied_categories,
+        category: promotionObj.category_id ? {
+          id: promotionObj.category_id._id,
+          name: promotionObj.category_id.category_name,
+          parent_id: promotionObj.category_id.category_parentId,
+          slug: promotionObj.category_id.category_slug
+        } : null,
         createdAt: promotionObj.createdAt,
         updatedAt: promotionObj.updatedAt
       };
@@ -97,25 +103,27 @@ class PromotionService {
 
   // Get promotion by ID
   static async getPromotionById(id) {
-    const promotion = await promotionModel.findById(id);
+    const promotion = await promotionModel.findById(id)
+      .populate('category_id', 'category_name category_parentId');
 
     if (!promotion) {
       throw new NotFoundError('Promotion not found');
     }
 
-    // Transform data to include only IDs
     const promotionObj = promotion.toObject({ virtuals: true });
     
     return {
       _id: promotionObj._id,
       promotion_name: promotionObj.promotion_name,
-      promotion_type: promotionObj.promotion_type,
       promotion_value: promotionObj.promotion_value,
       promotion_start_date: promotionObj.promotion_start_date,
       promotion_end_date: promotionObj.promotion_end_date,
       is_active: promotionObj.is_active,
-      applied_products: promotionObj.applied_products,
-      applied_categories: promotionObj.applied_categories,
+      category: promotionObj.category_id ? {
+        id: promotionObj.category_id._id,
+        name: promotionObj.category_id.category_name,
+        parent_id: promotionObj.category_id.category_parentId
+      } : null,
       createdAt: promotionObj.createdAt,
       updatedAt: promotionObj.updatedAt
     };
@@ -174,13 +182,15 @@ class PromotionService {
     return {
       _id: promotionObj._id,
       promotion_name: promotionObj.promotion_name,
-      promotion_type: promotionObj.promotion_type,
       promotion_value: promotionObj.promotion_value,
       promotion_start_date: promotionObj.promotion_start_date,
       promotion_end_date: promotionObj.promotion_end_date,
       is_active: promotionObj.is_active,
-      applied_products: promotionObj.applied_products,
-      applied_categories: promotionObj.applied_categories,
+      category: promotionObj.category_id ? {
+        id: promotionObj.category_id._id,
+        name: promotionObj.category_id.category_name,
+        parent_id: promotionObj.category_id.category_parentId
+      } : null,
       createdAt: promotionObj.createdAt,
       updatedAt: promotionObj.updatedAt
     };

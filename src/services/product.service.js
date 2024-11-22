@@ -18,6 +18,7 @@ const { getValueObj } = require("../utils/getValueObj");
 const Product = require("../entities/product.entity");
 const reviewModel = require("../models/review.model");
 const InvoiceModel = require("../models/invoice.model");
+const InvoiceModel = require("../models/invoice.model");
 
 const DEFAULT_STATUS = "Draft";
 
@@ -502,8 +503,8 @@ const getReviews = async (params, query = {}) => {
         select: "profile_firstName profile_lastName",
       },
     })
-    .select("review_date review_rating review_content")
-    .sort({ review_date: -1 }) // Sort by review_date in descending order
+    .select("createdAt review_rating review_content")
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .lean()
@@ -515,7 +516,7 @@ const getReviews = async (params, query = {}) => {
           display_name: `${review.review_user.user_profile.profile_firstName} ${review.review_user.user_profile.profile_lastName}`,
           image_url: null, // Set image_url to null since avatar is not implemented yet
         },
-        review_date: review.review_date,
+        review_date: review.createdAt,
         review_rating: review.review_rating,
         review_content: review.review_content,
       }));

@@ -18,7 +18,6 @@ const { getValueObj } = require("../utils/getValueObj");
 const Product = require("../entities/product.entity");
 const reviewModel = require("../models/review.model");
 const InvoiceModel = require("../models/invoice.model");
-const InvoiceModel = require("../models/invoice.model");
 
 const DEFAULT_STATUS = "Draft";
 

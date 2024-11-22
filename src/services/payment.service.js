@@ -69,9 +69,6 @@ const payInvoice = async (req) => {
     const { totalPrice: verifyTotal, processedProducts } =
       await checkTotalPriceAndAttackId(boughtItems);
 
-    console.log("verifyTotal", verifyTotal);
-    console.log("totalPrice", totalPrice);
-
     boughtItemsAttackedId = processedProducts;
 
     if (totalPrice !== verifyTotal * 25000) {
@@ -169,6 +166,9 @@ const payInvoiceCash = async (req) => {
     console.log("totalPrice", totalPrice);
 
     boughtItemsAttackedId = processedProducts;
+
+    console.log("totalPrice", totalPrice);
+    console.log("verifyTotal", verifyTotal * 25000);
 
     if (totalPrice !== verifyTotal * 25000) {
       throw new BadRequestError("Total price does not match");
@@ -287,6 +287,8 @@ const checkTotalPriceAndAttackId = async (boughtItems) => {
 
       const { _id } = product;
 
+      const finalPrice = product.final_price;
+
       const inventory = await inventoryService.getByProductId(_id);
 
       if (!inventory) {
@@ -314,13 +316,15 @@ const checkTotalPriceAndAttackId = async (boughtItems) => {
         product_size: size,
         product_color: color,
         product_quantity: quantity,
-        product_price: price,
+        product_price: product.product_price,
+        product_final_price: finalPrice,
+        product_discount: product.current_discount || 0,
       };
     })
   );
 
   const totalPrice = boughtItemsAttackedId.reduce((acc, curr) => {
-    return acc + curr.product_price * curr.product_quantity;
+    return acc + curr.product_final_price * curr.product_quantity;
   }, 0);
 
   return {

@@ -154,6 +154,54 @@ router.get("/:slug", ErrorHandler(productController.getBySlug));
  */
 router.get("/:slug/images", ErrorHandler(productController.getImages));
 
+/**
+ * @swagger
+ * /api/v1/products/{slug}/reviews:
+ *   get:
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The slug of the product
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: number
+ *         description: Page number (default is 1)
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: number
+ *         description: Number of items per page (default is 10)
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: number
+ *                     page:
+ *                       type: number
+ *                     limit:
+ *                       type: number
+ *                     totalPages:
+ *                       type: number
+ */
+router.get("/:slug/reviews", ErrorHandler(productController.getReviews));
+
 // router.use("/", authenticationMiddleware);
 // router.use(authorizationMiddleware(["ADMIN"]));
 /**
@@ -302,53 +350,5 @@ router.delete(
     // grantAccess("deleteAny", "products"),
     ErrorHandler(productController.remove)
 );
-
-/**
- * @swagger
- * /api/v1/products/{slug}/reviews:
- *   get:
- *     tags: [Products]
- *     parameters:
- *       - in: path
- *         name: slug
- *         required: true
- *         schema:
- *           type: string
- *         description: The slug of the product
- *       - in: query
- *         name: page
- *         required: false
- *         schema:
- *           type: number
- *         description: Page number (default is 1)
- *       - in: query
- *         name: limit
- *         required: false
- *         schema:
- *           type: number
- *         description: Number of items per page (default is 10)
- *     responses:
- *       200:
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: array
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     total:
- *                       type: number
- *                     page:
- *                       type: number
- *                     limit:
- *                       type: number
- *                     totalPages:
- *                       type: number
- */
-router.get("/:slug/reviews", ErrorHandler(productController.getReviews));
 
 module.exports = router;

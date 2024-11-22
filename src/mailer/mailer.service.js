@@ -29,8 +29,7 @@ const handlebarOptions = {
 // use a template file with nodemailer
 transporter.use("compile", hbs(handlebarOptions));
 
-const sendEmail = async ({ to = "", name = "" }) => {
-  const randomToken = Math.floor(100000 + Math.random() * 900000);
+const sendEmail = async ({ to = "", name = "", mailToken }) => {
 
   var opts = {
     from: sender,
@@ -41,7 +40,7 @@ const sendEmail = async ({ to = "", name = "" }) => {
     context: {
       name,
       website: url,
-      token: randomToken,
+      token: mailToken,
       // hrefVerify: `${url}/verifyEmail?q=${mailToken}`,
     },
   };
@@ -54,8 +53,36 @@ const sendEmail = async ({ to = "", name = "" }) => {
     }
   });
 
-  return randomToken;
+  return mailToken;
 };
+
+// const sendEmail = async ({ to = "", name = "" }) => {
+//   const randomToken = Math.floor(100000 + Math.random() * 900000);
+
+//   var opts = {
+//     from: sender,
+//     to,
+//     subject: "Clothing store notification",
+//     text: `Hii ${name} !`,
+//     template: "receiver",
+//     context: {
+//       name,
+//       website: url,
+//       token: randomToken,
+//       // hrefVerify: `${url}/verifyEmail?q=${mailToken}`,
+//     },
+//   };
+
+//   transporter.sendMail(opts, function (error, info) {
+//     if (error) {
+//       console.log(error);
+//     } else {
+//       console.log("Email sent: " + info.response);
+//     }
+//   });
+
+//   return randomToken;
+// };
 
 const sendResetPassword = async ({ to = "", name = "", resetUrl = "" }) => {
   const randomToken = Math.floor(100000 + Math.random() * 900000);

@@ -38,6 +38,16 @@ const productInvoiceSchema = new Schema({
     required: true,
     trim: true,
   },
+  product_final_price: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  product_discount: {
+    type: String,
+    required: true,
+    trim: true,
+  },
 });
 
 const invoiceSchema = new Schema(

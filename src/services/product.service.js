@@ -17,6 +17,7 @@ const { deleteFile } = require("../utils/handle-os-file");
 const { getValueObj } = require("../utils/getValueObj");
 const Product = require("../entities/product.entity");
 const reviewModel = require("../models/review.model");
+const InvoiceModel = require("../models/invoice.model");
 
 const DEFAULT_STATUS = "Draft";
 
@@ -247,22 +248,27 @@ const getBySearchQuery = async (query) => {
     return [];
   }
 
-  const products = await productModel
-    .find({
-      product_name: { $regex: q, $options: "i" },
-      product_slug: { $regex: q, $options: "i" },
-    })
-    .populate("product_category")
-    .populate({
-      path: "product_promotion.promotion_id",
-      model: "Promotion",
-      match: {
-        start_date: { $lte: new Date() },
-        end_date: { $gt: new Date() },
-      },
-    });
+  try {
+    const products = await productModel
+      .find({
+        product_name: { $regex: q, $options: "i" },
+        product_slug: { $regex: q, $options: "i" },
+      })
+      .populate("product_category")
+      .populate({
+        path: "product_promotion.promotion_id",
+        model: "Promotion",
+        match: {
+          start_date: { $lte: new Date() },
+          end_date: { $gt: new Date() },
+        },
+      });
 
-  return products;
+    return products;
+  } catch (error) {
+    console.error("Error searching products:", error);
+    return [];
+  }
 };
 
 // [GET] /api/v1/products/:slug/images
@@ -529,6 +535,120 @@ const getReviews = async (params, query = {}) => {
   };
 };
 
+// [GET] /api/v1/products/new-arrivals
+const getNewArrivals = async (limit = 10) => {
+  console.log("Querying new arrivals...");
+
+  try {
+    const products = await productModel
+      .find({
+        product_status: { $in: ["Published"] },
+      })
+      .sort({ _id: -1 })
+      .limit(Number(limit))
+      .populate("product_category")
+      .populate({
+        path: "product_promotions",
+        strictPopulate: false,
+      });
+
+    console.log(`Found ${products.length} products`);
+    return products;
+  } catch (error) {
+    // Nếu lỗi populate promotion thì thử lại không có promotion
+    if (error.message.includes("product_promotions")) {
+      const products = await productModel
+        .find({
+          product_status: { $in: ["Published"] },
+        })
+        .sort({ _id: -1 })
+        .limit(Number(limit))
+        .populate("product_category");
+
+      return products;
+    }
+    return [];
+  }
+};
+
+// [GET] /api/v1/products/on-sale
+const getOnSaleProducts = async (limit = 10) => {
+  try {
+    const products = await productModel
+      .find({
+        product_status: "Published",
+        product_promotion: { $ne: null },
+      })
+      .limit(Number(limit))
+      .populate("product_category")
+      .populate({
+        path: "product_promotion.promotion_id",
+        model: "Promotion",
+        match: {
+          promotion_start_date: { $lte: new Date() },
+          promotion_end_date: { $gt: new Date() },
+        },
+      });
+
+    const activePromotionProducts = products.filter(
+      (product) => product.product_promotion?.promotion_id != null
+    );
+
+    return activePromotionProducts;
+  } catch (error) {
+    console.error("Error getting on-sale products:", error);
+    return [];
+  }
+};
+
+const getBestSellers = async (limit = 10) => {
+  try {
+    // Đầu tiên lấy thống kê số lượng bán từ invoices
+    const salesStats = await InvoiceModel.aggregate([
+      { $match: { invoice_status: "paid" } },
+      { $unwind: "$invoice_products" },
+      {
+        $group: {
+          _id: "$invoice_products._id",
+          totalSold: { $sum: "$invoice_products.product_quantity" },
+        },
+      },
+    ]);
+
+    // Tạo map để lưu số lượng bán của từng sản phẩm
+    const salesMap = new Map(
+      salesStats.map((item) => [item._id.toString(), item.totalSold])
+    );
+
+    // Lấy tất cả sản phẩm
+    const products = await productModel
+      .find()
+      .populate("product_category")
+      .populate({
+        path: "product_promotion.promotion_id",
+        model: "Promotion",
+        match: {
+          promotion_start_date: { $lte: new Date() },
+          promotion_end_date: { $gt: new Date() },
+        },
+      });
+
+    // Thêm thông tin số lượng bán vào mỗi sản phẩm và sắp xếp
+    const productsWithSales = products.map((product) => ({
+      ...product.toObject(),
+      total_sold: salesMap.get(product._id.toString()) || 0,
+    }));
+
+    // Sắp xếp theo số lượng bán giảm dần
+    productsWithSales.sort((a, b) => b.total_sold - a.total_sold);
+
+    return productsWithSales;
+  } catch (error) {
+    console.error("Error getting best sellers:", error);
+    return [];
+  }
+};
+
 module.exports = {
   create,
   getAll,
@@ -539,6 +659,9 @@ module.exports = {
   getBySearchQuery,
   getReviews,
   update,
+  getNewArrivals,
+  getOnSaleProducts,
+  getBestSellers,
 };
 
 // images = imagesUpload.map((image) => {
